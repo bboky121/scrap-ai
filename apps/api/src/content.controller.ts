@@ -16,9 +16,11 @@ export class ContentController {
   }
 
   @Get('articles')
-  async articles(@Req() req: Request, @Query('page') page = '1') {
+  async articles(@Req() req: Request, @Query('page') page = '1', @Query('kind') kind?: string) {
     const paid = await this.subscribed(req); const take = 20; const current = Math.max(1, Number(page) || 1);
-    const rows = await this.prisma.article.findMany({ include: { summary: true }, orderBy: { publishedAt: 'desc' }, skip: (current - 1) * take, take });
+    const allowedKinds = ['NEWS', 'DISCLOSURE', 'MARKET_COMMENTARY'];
+    const where = kind && allowedKinds.includes(kind) ? { kind: kind as 'NEWS' | 'DISCLOSURE' | 'MARKET_COMMENTARY' } : undefined;
+    const rows = await this.prisma.article.findMany({ where, include: { summary: true }, orderBy: { publishedAt: 'desc' }, skip: (current - 1) * take, take });
     return { items: rows.map((row) => this.articleView(row, paid)), page: current, hasMore: rows.length === take };
   }
 
@@ -34,6 +36,42 @@ export class ContentController {
     const paid = await this.subscribed(req);
     const rows = await this.prisma.hourlyBriefing.findMany({ orderBy: { bucketAt: 'desc' }, take: 24, include: { _count: { select: { articles: true } } } });
     return { items: rows.map((row) => this.locked(row.bucketAt, paid) ? { id: row.id, bucketAt: row.bucketAt, headline: row.headline, locked: true, articleCount: row._count.articles } : { ...row, locked: false, articleCount: row._count.articles }) };
+  }
+
+  @Get('dashboard')
+  async dashboard(@Req() req: Request) {
+    const paid = await this.subscribed(req);
+    const rows = await this.prisma.hourlyBriefing.findMany({
+      orderBy: { bucketAt: 'desc' },
+      take: 3,
+      include: {
+        articles: { include: { article: { include: { summary: true } } } },
+      },
+    });
+
+    const items = rows.map((row) => {
+      const summaries = row.articles.flatMap(({ article }) => article.summary ? [article.summary] : []);
+      const positiveCount = summaries.filter(({ sentiment }) => sentiment === 'POSITIVE').length;
+      const negativeCount = summaries.filter(({ sentiment }) => sentiment === 'NEGATIVE').length;
+      const watchStocks = Array.isArray(row.watchStocks)
+        ? row.watchStocks.filter((value): value is string => typeof value === 'string')
+        : [];
+      const locked = this.locked(row.bucketAt, paid);
+
+      return {
+        id: row.id,
+        bucketAt: row.bucketAt,
+        headline: row.headline,
+        marketImpact: locked ? null : row.marketImpact,
+        articleCount: row.articles.length,
+        watchStocks: locked ? [] : watchStocks,
+        sentiment: positiveCount > negativeCount ? '긍정' : negativeCount > positiveCount ? '부정' : '중립',
+        positivePercent: summaries.length ? Math.round((positiveCount / summaries.length) * 100) : 0,
+        locked,
+      };
+    });
+
+    return { latest: items[0] ?? null, recent: items };
   }
 
   @Get('briefings/:id')
