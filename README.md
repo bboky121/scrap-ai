@@ -29,6 +29,8 @@ KIS 키가 비어 있으면 공식 응답 모양의 fixture로 동작합니다. 
 curl -X POST http://localhost:8100/internal/ingestions -H 'x-internal-token: change-me'
 ```
 
+자동 수집은 Celery Beat가 `Asia/Seoul` 시간대를 기준으로 매시 정각(`00분`)에 실행합니다.
+
 호스트 서비스 포트: 웹 `3100`, Nest API `4100`, Python API/docs `8100/docs`. PostgreSQL과 Valkey는 Docker 내부 네트워크에서만 접근합니다.
 
 ## KIS 계약

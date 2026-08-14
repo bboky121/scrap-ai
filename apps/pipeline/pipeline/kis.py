@@ -36,6 +36,7 @@ class KisEnvelope(BaseModel):
     msg_cd: str = ""
     msg1: str = ""
     output: list[dict[str, Any]] = []
+    tr_cont: str = Field(default="", exclude=True)
 
 
 class KisClient:
@@ -69,10 +70,12 @@ class KisClient:
             await self.redis.set("kis:access_token", token, ex=ttl)
             return token
 
-    async def news(self, query: NewsQuery | None = None) -> KisEnvelope:
+    async def news(self, query: NewsQuery | None = None, tr_cont: str = "") -> KisEnvelope:
         params = (query or NewsQuery()).model_dump(by_alias=True)
+        refresh_token = False
         for attempt in range(4):
-            token = await self.token(force=attempt == 1)
+            token = await self.token(force=refresh_token)
+            refresh_token = False
             response = await self.client.get(
                 NEWS_PATH,
                 params=params,
@@ -81,12 +84,14 @@ class KisClient:
                     "appkey": self.cfg.kis_app_key,
                     "appsecret": self.cfg.kis_app_secret,
                     "tr_id": NEWS_TR_ID,
+                    "tr_cont": tr_cont,
                     "custtype": "P",
                     "content-type": "application/json; charset=utf-8",
                 },
             )
             if response.status_code == 401 and attempt == 0:
                 await self.redis.delete("kis:access_token")
+                refresh_token = True
                 continue
             if response.status_code == 429 or response.status_code >= 500:
                 if attempt < 3:
@@ -94,6 +99,7 @@ class KisClient:
                     continue
             response.raise_for_status()
             envelope = KisEnvelope.model_validate(response.json())
+            envelope.tr_cont = response.headers.get("tr_cont", "")
             if envelope.rt_cd != "0":
                 raise RuntimeError(f"KIS {envelope.msg_cd}: {envelope.msg1}")
             return envelope

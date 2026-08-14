@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from celery import Celery
+from celery.schedules import crontab
 from redis.asyncio import Redis
 from sqlalchemy import text
 
@@ -21,8 +22,8 @@ from .summary import briefing, summarize
 cfg = settings()
 celery = Celery("kisbrief", broker=cfg.valkey_url, backend=cfg.valkey_url)
 celery.conf.beat_schedule = {
-    "hourly-kis-news": {"task": "pipeline.ingest", "schedule": 3600.0},
-    "renew-subscriptions": {"task": "pipeline.renew_subscriptions", "schedule": 3600.0},
+    "hourly-kis-news": {"task": "pipeline.ingest", "schedule": crontab(minute=0)},
+    "renew-subscriptions": {"task": "pipeline.renew_subscriptions", "schedule": crontab(minute=0)},
 }
 celery.conf.timezone = "Asia/Seoul"
 
