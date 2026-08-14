@@ -1,0 +1,56 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions: { contents: read, packages: write }
+jobs:
+  node:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9.15.4 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @kis/api prisma:generate
+      - run: pnpm --filter @kis/api test
+      - run: pnpm --filter @kis/api build
+      - run: pnpm --filter @kis/web build
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12', cache: pip, cache-dependency-path: apps/pipeline/pyproject.toml }
+      - run: pip install './apps/pipeline[dev]'
+      - run: ruff check apps/pipeline
+      - run: pytest apps/pipeline
+      - run: mypy --config-file apps/pipeline/pyproject.toml apps/pipeline/pipeline
+      - run: docker compose config
+  docker:
+    if: github.event_name == 'push'
+    needs: [node, python]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - { name: web, file: apps/web/Dockerfile }
+          - { name: api, file: apps/api/Dockerfile }
+          - { name: pipeline, file: apps/pipeline/Dockerfile }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with: { registry: ghcr.io, username: '${{ github.actor }}', password: '${{ secrets.GITHUB_TOKEN }}' }
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: '${{ matrix.file }}'
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/kis-brief-${{ matrix.name }}:${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/kis-brief-${{ matrix.name }}:latest
+      - uses: aquasecurity/trivy-action@0.29.0
+        with: { image-ref: 'ghcr.io/${{ github.repository_owner }}/kis-brief-${{ matrix.name }}:${{ github.sha }}', severity: 'HIGH,CRITICAL', exit-code: '1', ignore-unfixed: true }

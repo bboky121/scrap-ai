@@ -1,0 +1,18 @@
+CREATE TYPE "ArticleKind" AS ENUM ('NEWS','DISCLOSURE','MARKET_COMMENTARY');
+CREATE TYPE "Sentiment" AS ENUM ('POSITIVE','NEUTRAL','NEGATIVE');
+CREATE TYPE "IngestionStatus" AS ENUM ('PENDING','RUNNING','SUCCEEDED','FAILED','DEMO_FIXTURE');
+CREATE TYPE "PlanCode" AS ENUM ('WEEK','MONTH','YEAR');
+CREATE TYPE "PaymentStatus" AS ENUM ('SUCCEEDED','FAILED');
+CREATE TYPE "SubscriptionStatus" AS ENUM ('ACTIVE','EXPIRED');
+CREATE TABLE "User" ("id" TEXT PRIMARY KEY,"email" TEXT NOT NULL UNIQUE,"name" TEXT NOT NULL,"provider" TEXT NOT NULL DEFAULT 'demo',"providerId" TEXT,"createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE "Article" ("id" TEXT PRIMARY KEY,"externalId" TEXT NOT NULL UNIQUE,"kind" "ArticleKind" NOT NULL,"title" TEXT NOT NULL,"provider" TEXT NOT NULL,"publishedAt" TIMESTAMP(3) NOT NULL,"stockCode" TEXT,"sourceUrl" TEXT,"bodyExcerpt" TEXT,"raw" JSONB NOT NULL,"createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE INDEX "Article_publishedAt_idx" ON "Article"("publishedAt" DESC);
+CREATE TABLE "ArticleSummary" ("id" TEXT PRIMARY KEY,"articleId" TEXT NOT NULL UNIQUE REFERENCES "Article"("id") ON DELETE CASCADE,"bullets" JSONB NOT NULL,"keywords" JSONB NOT NULL,"relatedStocks" JSONB NOT NULL,"sentiment" "Sentiment" NOT NULL,"titleOnly" BOOLEAN NOT NULL DEFAULT true,"createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE "HourlyBriefing" ("id" TEXT PRIMARY KEY,"bucketAt" TIMESTAMP(3) NOT NULL UNIQUE,"headline" TEXT NOT NULL,"keyIssues" JSONB NOT NULL,"marketImpact" TEXT NOT NULL,"watchStocks" JSONB NOT NULL,"createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE "BriefingArticle" ("briefingId" TEXT NOT NULL REFERENCES "HourlyBriefing"("id") ON DELETE CASCADE,"articleId" TEXT NOT NULL REFERENCES "Article"("id") ON DELETE CASCADE,PRIMARY KEY("briefingId","articleId"));
+CREATE TABLE "Plan" ("code" "PlanCode" PRIMARY KEY,"name" TEXT NOT NULL,"price" INTEGER NOT NULL,"durationUnit" TEXT NOT NULL,"durationCount" INTEGER NOT NULL);
+CREATE TABLE "PaymentAttempt" ("id" TEXT PRIMARY KEY,"userId" TEXT NOT NULL REFERENCES "User"("id"),"planCode" "PlanCode" NOT NULL REFERENCES "Plan"("code"),"amount" INTEGER NOT NULL,"status" "PaymentStatus" NOT NULL,"cardLast4" TEXT NOT NULL,"failureReason" TEXT,"createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE "Subscription" ("id" TEXT PRIMARY KEY,"userId" TEXT NOT NULL REFERENCES "User"("id"),"planCode" "PlanCode" NOT NULL REFERENCES "Plan"("code"),"status" "SubscriptionStatus" NOT NULL,"startsAt" TIMESTAMP(3) NOT NULL,"endsAt" TIMESTAMP(3) NOT NULL,"autoRenew" BOOLEAN NOT NULL DEFAULT false,"canceledAt" TIMESTAMP(3),"createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE INDEX "Subscription_userId_status_endsAt_idx" ON "Subscription"("userId","status","endsAt");
+CREATE TABLE "SubscriptionEvent" ("id" TEXT PRIMARY KEY,"subscriptionId" TEXT NOT NULL REFERENCES "Subscription"("id") ON DELETE CASCADE,"type" TEXT NOT NULL,"detail" JSONB NOT NULL,"createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE "IngestionRun" ("id" TEXT PRIMARY KEY,"status" "IngestionStatus" NOT NULL,"source" TEXT NOT NULL,"fetchedCount" INTEGER NOT NULL DEFAULT 0,"savedCount" INTEGER NOT NULL DEFAULT 0,"error" TEXT,"startedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,"finishedAt" TIMESTAMP(3));

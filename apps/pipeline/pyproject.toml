@@ -1,0 +1,25 @@
+[project]
+name = "kis-brief-pipeline"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115,<1", "uvicorn[standard]>=0.34,<1", "celery[redis]>=5.4,<6",
+  "redis>=5.2,<6", "httpx>=0.28,<1", "pydantic-settings>=2.7,<3",
+  "sqlalchemy>=2.0,<3", "psycopg[binary]>=3.2,<4", "beautifulsoup4>=4.12,<5"
+]
+[project.optional-dependencies]
+dev = ["pytest>=8.3,<9", "respx>=0.22,<1", "ruff>=0.9,<1", "mypy>=1.14,<2", "types-beautifulsoup4>=4.12"]
+[tool.ruff]
+line-length = 500
+[tool.ruff.lint]
+select = ["E", "F", "I", "B"]
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+[tool.mypy]
+python_version = "3.11"
+strict = true
+plugins = ["pydantic.mypy"]
+[[tool.mypy.overrides]]
+module = ["celery", "celery.*"]
+ignore_missing_imports = true
