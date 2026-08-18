@@ -1,1 +1,157 @@
-.account-card{border:1px solid var(--line);border-radius:26px;background:#fff;box-shadow:0 18px 55px #1920330b}.account-login{display:grid;grid-template-columns:1fr 380px;gap:72px;align-items:center;padding:54px}.account-login-copy{max-width:480px}.account-kicker,.account-identity>span{color:var(--blue);font-size:11px;font-weight:800;letter-spacing:1.5px}.account-login h2,.account-profile h2{font-size:30px;margin:12px 0}.account-login-copy p{color:var(--muted);font-size:15px;line-height:1.7}.account-actions{display:flex;flex-direction:column}.google-login,.demo-login{height:52px;border-radius:13px;display:flex;align-items:center;justify-content:center;gap:12px;font-size:15px;font-weight:700;cursor:pointer}.google-login{border:1px solid #d9dee7;background:#fff;color:#202124;box-shadow:0 3px 12px #2021240d;transition:.2s}.google-login:hover{border-color:#b9c5d8;box-shadow:0 7px 22px #20212414;transform:translateY(-1px)}.demo-login{border:0;background:#f1f3f6;color:var(--ink)}.account-divider{height:42px;display:flex;align-items:center;color:#9aa1ad;font-size:12px}.account-divider:before,.account-divider:after{content:"";height:1px;background:var(--line);flex:1}.account-divider span{padding:0 14px}.account-actions small{color:#9299a6;text-align:center;font-size:11px;line-height:1.5;margin-top:16px}.account-profile{display:flex;align-items:center;padding:38px 44px}.account-avatar{width:66px;height:66px;border-radius:20px;background:linear-gradient(135deg,var(--blue),#6ca4ff);color:#fff;display:grid;place-items:center;font-size:25px;font-weight:800;margin-right:22px}.account-identity h2{font-size:24px;margin:7px 0 3px}.account-identity p{color:var(--muted);margin:0}.account-logout{margin-left:auto;border:1px solid var(--line);border-radius:12px;background:#fff;padding:11px 16px;font-weight:700;cursor:pointer}.account-loading{padding:60px;text-align:center;color:var(--muted)}.account-error{color:#d64045;background:#fff1f2;border-radius:12px;padding:13px 16px;font-size:13px}.account-actions button{font-family:inherit}@media(max-width:800px){.account-login{grid-template-columns:1fr;gap:32px;padding:30px}.account-profile{align-items:flex-start;padding:28px}.account-avatar{width:52px;height:52px}.account-identity h2{font-size:20px}}
+.account-card {
+  border: 1px solid var(--line);
+  border-radius: 26px;
+  background: #fff;
+  box-shadow: 0 18px 55px #1920330b;
+}
+.account-login {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 72px;
+  align-items: center;
+  padding: 54px;
+}
+.account-login-copy {
+  max-width: 480px;
+}
+.account-kicker,
+.account-identity > span {
+  color: var(--blue);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+.account-login h2,
+.account-profile h2 {
+  font-size: 30px;
+  margin: 12px 0;
+}
+.account-login-copy p {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.7;
+}
+.account-actions {
+  display: flex;
+  flex-direction: column;
+}
+.google-login,
+.demo-login {
+  height: 52px;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.google-login {
+  border: 1px solid #d9dee7;
+  background: #fff;
+  color: #202124;
+  box-shadow: 0 3px 12px #2021240d;
+  transition: 0.2s;
+}
+.google-login:hover {
+  border-color: #b9c5d8;
+  box-shadow: 0 7px 22px #20212414;
+  transform: translateY(-1px);
+}
+.demo-login {
+  border: 0;
+  background: #f1f3f6;
+  color: var(--ink);
+}
+.account-divider {
+  height: 42px;
+  display: flex;
+  align-items: center;
+  color: #9aa1ad;
+  font-size: 12px;
+}
+.account-divider:before,
+.account-divider:after {
+  content: '';
+  height: 1px;
+  background: var(--line);
+  flex: 1;
+}
+.account-divider span {
+  padding: 0 14px;
+}
+.account-actions small {
+  color: #9299a6;
+  text-align: center;
+  font-size: 11px;
+  line-height: 1.5;
+  margin-top: 16px;
+}
+.account-profile {
+  display: flex;
+  align-items: center;
+  padding: 38px 44px;
+}
+.account-avatar {
+  width: 66px;
+  height: 66px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, var(--blue), #6ca4ff);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 25px;
+  font-weight: 800;
+  margin-right: 22px;
+}
+.account-identity h2 {
+  font-size: 24px;
+  margin: 7px 0 3px;
+}
+.account-identity p {
+  color: var(--muted);
+  margin: 0;
+}
+.account-logout {
+  margin-left: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  padding: 11px 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.account-loading {
+  padding: 60px;
+  text-align: center;
+  color: var(--muted);
+}
+.account-error {
+  color: #d64045;
+  background: #fff1f2;
+  border-radius: 12px;
+  padding: 13px 16px;
+  font-size: 13px;
+}
+.account-actions button {
+  font-family: inherit;
+}
+@media (max-width: 800px) {
+  .account-login {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    padding: 30px;
+  }
+  .account-profile {
+    align-items: flex-start;
+    padding: 28px;
+  }
+  .account-avatar {
+    width: 52px;
+    height: 52px;
+  }
+  .account-identity h2 {
+    font-size: 20px;
+  }
+}
