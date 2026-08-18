@@ -5,4 +5,16 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 cd "$REPO_ROOT"
 
 echo "Running format checks..."
-pnpm format:check
+
+run_pnpm() {
+  if command -v pnpm >/dev/null 2>&1; then
+    pnpm "$@"
+  elif command -v corepack >/dev/null 2>&1; then
+    corepack pnpm "$@"
+  else
+    echo "pre-commit: pnpm/Corepack를 찾을 수 없습니다. Node.js를 설치하거나 PATH에 추가하세요." >&2
+    exit 1
+  fi
+}
+
+run_pnpm format:check

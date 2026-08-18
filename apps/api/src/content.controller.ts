@@ -27,10 +27,19 @@ export class ContentController {
 
   @Get('articles')
   async articles(@Req() req: Request, @Query('page') page = '1', @Query('kind') kind?: string) {
-    const paid = await this.subscribed(req); const take = 20; const current = Math.max(1, Number(page) || 1);
+    const paid = await this.subscribed(req);
+    const take = 20;
+    const current = Math.max(1, Number(page) || 1);
     const allowedKinds = ['NEWS', 'DISCLOSURE', 'MARKET_COMMENTARY'];
-    const where = kind && allowedKinds.includes(kind) ? { kind: kind as 'NEWS' | 'DISCLOSURE' | 'MARKET_COMMENTARY' } : undefined;
-    const rows = await this.prisma.article.findMany({ where, include: { summary: true }, orderBy: { publishedAt: 'desc' }, skip: (current - 1) * take, take });
+    const where =
+      kind && allowedKinds.includes(kind) ? { kind: kind as 'NEWS' | 'DISCLOSURE' | 'MARKET_COMMENTARY' } : undefined;
+    const rows = await this.prisma.article.findMany({
+      where,
+      include: { summary: true },
+      orderBy: { publishedAt: 'desc' },
+      skip: (current - 1) * take,
+      take,
+    });
     return { items: rows.map((row) => this.articleView(row, paid)), page: current, hasMore: rows.length === take };
   }
 
@@ -76,7 +85,7 @@ export class ContentController {
     });
 
     const items = rows.map((row) => {
-      const summaries = row.articles.flatMap(({ article }) => article.summary ? [article.summary] : []);
+      const summaries = row.articles.flatMap(({ article }) => (article.summary ? [article.summary] : []));
       const positiveCount = summaries.filter(({ sentiment }) => sentiment === 'POSITIVE').length;
       const negativeCount = summaries.filter(({ sentiment }) => sentiment === 'NEGATIVE').length;
       const watchStocks = Array.isArray(row.watchStocks)
