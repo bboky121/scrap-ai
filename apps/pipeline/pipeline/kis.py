@@ -101,15 +101,11 @@ class KisClient:
 
 
 def normalize(row: dict[str, Any]) -> dict[str, Any]:
-    title = str(
-        row.get("hts_pbnt_titl_cntt") or row.get("news_titl") or row.get("title") or "제목 없음"
-    ).strip()
+    title = str(row.get("hts_pbnt_titl_cntt") or row.get("news_titl") or row.get("title") or "제목 없음").strip()
     date = str(row.get("data_dt") or row.get("date") or datetime.now().strftime("%Y%m%d"))
     hour = str(row.get("data_tm") or row.get("time") or "000000").ljust(6, "0")
     try:
-        published = datetime.strptime(date + hour[:6], "%Y%m%d%H%M%S").replace(
-            tzinfo=ZoneInfo("Asia/Seoul")
-        ).astimezone(ZoneInfo("UTC"))
+        published = datetime.strptime(date + hour[:6], "%Y%m%d%H%M%S").replace(tzinfo=ZoneInfo("Asia/Seoul")).astimezone(ZoneInfo("UTC"))
     except ValueError:
         published = datetime.now()
     category: Literal["NEWS", "DISCLOSURE", "MARKET_COMMENTARY"] = "NEWS"

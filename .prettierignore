@@ -1,0 +1,10 @@
+node_modules
+.next
+dist
+apps/**/dist
+coverage
+.venv
+.mypy_cache
+.ruff_cache
+apps/api/prisma/migrations
+pnpm-lock.yaml

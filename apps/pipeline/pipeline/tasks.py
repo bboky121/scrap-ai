@@ -52,9 +52,7 @@ def ingest(self: Any) -> dict[str, Any]:
     saved: list[dict[str, Any]] = []
     try:
         db.execute(
-            text(
-                'INSERT INTO "IngestionRun" (id,status,source,"startedAt") VALUES (:id,CAST(:status AS "IngestionStatus"),:source,now()) ON CONFLICT (id) DO UPDATE SET status=EXCLUDED.status'
-            ),
+            text('INSERT INTO "IngestionRun" (id,status,source,"startedAt") VALUES (:id,CAST(:status AS "IngestionStatus"),:source,now()) ON CONFLICT (id) DO UPDATE SET status=EXCLUDED.status'),
             {"id": run_id, "status": "RUNNING", "source": source},
         )
         for raw in envelope.output:
@@ -64,9 +62,7 @@ def ingest(self: Any) -> dict[str, Any]:
             article_id = str(uuid.uuid4())
             summary = summarize(item["title"], item["kind"], item["stock_code"])
             result = db.execute(
-                text(
-                    'INSERT INTO "Article" (id,"externalId",kind,title,provider,"publishedAt","stockCode","sourceUrl",raw,"createdAt") VALUES (:id,:external,CAST(:kind AS "ArticleKind"),:title,:provider,:published,:stock,:url,CAST(:raw AS jsonb),now()) ON CONFLICT ("externalId") DO NOTHING RETURNING id'
-                ),
+                text('INSERT INTO "Article" (id,"externalId",kind,title,provider,"publishedAt","stockCode","sourceUrl",raw,"createdAt") VALUES (:id,:external,CAST(:kind AS "ArticleKind"),:title,:provider,:published,:stock,:url,CAST(:raw AS jsonb),now()) ON CONFLICT ("externalId") DO NOTHING RETURNING id'),
                 {
                     "id": article_id,
                     "external": external_id,
@@ -82,9 +78,7 @@ def ingest(self: Any) -> dict[str, Any]:
             inserted = result.scalar_one_or_none()
             if inserted:
                 db.execute(
-                    text(
-                        'INSERT INTO "ArticleSummary" (id,"articleId",bullets,keywords,"relatedStocks",sentiment,"titleOnly","createdAt") VALUES (:id,:article,CAST(:bullets AS jsonb),CAST(:keywords AS jsonb),CAST(:stocks AS jsonb),CAST(:sentiment AS "Sentiment"),:title_only,now())'
-                    ),
+                    text('INSERT INTO "ArticleSummary" (id,"articleId",bullets,keywords,"relatedStocks",sentiment,"titleOnly","createdAt") VALUES (:id,:article,CAST(:bullets AS jsonb),CAST(:keywords AS jsonb),CAST(:stocks AS jsonb),CAST(:sentiment AS "Sentiment"),:title_only,now())'),
                     {
                         "id": str(uuid.uuid4()),
                         "article": inserted,
@@ -102,9 +96,7 @@ def ingest(self: Any) -> dict[str, Any]:
             brief = briefing(saved)
             bid = str(uuid.uuid4())
             briefing_result = db.execute(
-                text(
-                    'INSERT INTO "HourlyBriefing" (id,"bucketAt",headline,"keyIssues","marketImpact","watchStocks","createdAt") VALUES (:id,:bucket,:headline,CAST(:issues AS jsonb),:impact,CAST(:stocks AS jsonb),now()) ON CONFLICT ("bucketAt") DO UPDATE SET headline=EXCLUDED.headline,"keyIssues"=EXCLUDED."keyIssues","marketImpact"=EXCLUDED."marketImpact","watchStocks"=EXCLUDED."watchStocks" RETURNING id'
-                ),
+                text('INSERT INTO "HourlyBriefing" (id,"bucketAt",headline,"keyIssues","marketImpact","watchStocks","createdAt") VALUES (:id,:bucket,:headline,CAST(:issues AS jsonb),:impact,CAST(:stocks AS jsonb),now()) ON CONFLICT ("bucketAt") DO UPDATE SET headline=EXCLUDED.headline,"keyIssues"=EXCLUDED."keyIssues","marketImpact"=EXCLUDED."marketImpact","watchStocks"=EXCLUDED."watchStocks" RETURNING id'),
                 {
                     "id": bid,
                     "bucket": bucket,
@@ -117,16 +109,12 @@ def ingest(self: Any) -> dict[str, Any]:
             bid = str(briefing_result.scalar_one())
             for item in saved:
                 db.execute(
-                    text(
-                        'INSERT INTO "BriefingArticle" ("briefingId","articleId") VALUES (:brief,:article) ON CONFLICT DO NOTHING'
-                    ),
+                    text('INSERT INTO "BriefingArticle" ("briefingId","articleId") VALUES (:brief,:article) ON CONFLICT DO NOTHING'),
                     {"brief": bid, "article": item["id"]},
                 )
         status = "DEMO_FIXTURE" if source == "DEMO_FIXTURE" else "SUCCEEDED"
         db.execute(
-            text(
-                'UPDATE "IngestionRun" SET status=CAST(:status AS "IngestionStatus"),"fetchedCount"=:fetched,"savedCount"=:saved,"finishedAt"=now() WHERE id=:id'
-            ),
+            text('UPDATE "IngestionRun" SET status=CAST(:status AS "IngestionStatus"),"fetchedCount"=:fetched,"savedCount"=:saved,"finishedAt"=now() WHERE id=:id'),
             {"status": status, "fetched": len(envelope.output), "saved": len(saved), "id": run_id},
         )
         db.commit()
@@ -144,17 +132,9 @@ def renew_subscriptions() -> int:
     # Payment remains simulated. Expired auto-renew rows are extended by the selected calendar unit.
     db = session()
     try:
-        result = db.execute(
-            text(
-                'UPDATE "Subscription" SET "endsAt" = CASE WHEN "planCode"=\'WEEK\' THEN "endsAt" + interval \'7 days\' WHEN "planCode"=\'MONTH\' THEN "endsAt" + interval \'1 month\' ELSE "endsAt" + interval \'1 year\' END WHERE status=\'ACTIVE\' AND "autoRenew"=true AND "endsAt" <= now() RETURNING id'
-            )
-        )
+        result = db.execute(text('UPDATE "Subscription" SET "endsAt" = CASE WHEN "planCode"=\'WEEK\' THEN "endsAt" + interval \'7 days\' WHEN "planCode"=\'MONTH\' THEN "endsAt" + interval \'1 month\' ELSE "endsAt" + interval \'1 year\' END WHERE status=\'ACTIVE\' AND "autoRenew"=true AND "endsAt" <= now() RETURNING id'))
         count = len(result.fetchall())
-        db.execute(
-            text(
-                'UPDATE "Subscription" SET status=\'EXPIRED\' WHERE status=\'ACTIVE\' AND "autoRenew"=false AND "endsAt" <= now()'
-            )
-        )
+        db.execute(text('UPDATE "Subscription" SET status=\'EXPIRED\' WHERE status=\'ACTIVE\' AND "autoRenew"=false AND "endsAt" <= now()'))
         db.commit()
         return count
     except Exception as exc:

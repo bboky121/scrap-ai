@@ -5,9 +5,7 @@ from .settings import settings
 
 
 def sync_url() -> str:
-    return settings().database_url.replace("postgresql+asyncpg://", "postgresql+psycopg://").replace(
-        "postgresql://", "postgresql+psycopg://"
-    )
+    return settings().database_url.replace("postgresql+asyncpg://", "postgresql+psycopg://").replace("postgresql://", "postgresql+psycopg://")
 
 
 engine = create_engine(sync_url(), pool_pre_ping=True)

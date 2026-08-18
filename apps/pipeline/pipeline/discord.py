@@ -12,10 +12,7 @@ def notify_error(title: str, detail: str, context: dict[str, Any] | None = None)
     webhook = settings().discord_webhook_url
     if not webhook:
         return
-    fields = [
-        {"name": key, "value": str(value)[:1000], "inline": True}
-        for key, value in (context or {}).items()
-    ][:10]
+    fields = [{"name": key, "value": str(value)[:1000], "inline": True} for key, value in (context or {}).items()][:10]
     payload = {
         "username": "시그널브리프 알림",
         "embeds": [
