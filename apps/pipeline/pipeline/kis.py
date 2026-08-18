@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import asyncio
+import json
+import logging
+import re
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Literal
 from zoneinfo import ZoneInfo
 
@@ -15,6 +19,38 @@ TOKEN_PATH = "/oauth2/tokenP"
 NEWS_PATH = "/uapi/domestic-stock/v1/quotations/news-title"
 # KIS Developers: 종합 시황/공시(제목) [국내주식-141].
 NEWS_TR_ID = "FHKST01011800"
+_EXCHANGE_LOGGER = logging.getLogger("kis.exchange")
+_EXCHANGE_LOGGER.setLevel(logging.INFO)
+_EXCHANGE_LOGGER.propagate = False
+
+
+def _exchange_logger() -> logging.Logger:
+    if not _EXCHANGE_LOGGER.handlers:
+        log_dir = Path(settings().kis_log_dir)
+        log_dir.mkdir(parents=True, exist_ok=True)
+        handler = logging.FileHandler(log_dir / "kis-api.log", encoding="utf-8")
+        handler.setFormatter(logging.Formatter("%(message)s"))
+        _EXCHANGE_LOGGER.addHandler(handler)
+    return _EXCHANGE_LOGGER
+
+
+def _mask(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {key: ("***REDACTED***" if key.lower() in {"appkey", "appsecret", "authorization"} else _mask(item)) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_mask(item) for item in value]
+    return value
+
+
+def _safe_body(raw: str) -> Any:
+    try:
+        return _mask(json.loads(raw))
+    except json.JSONDecodeError:
+        return raw
+
+
+def log_exchange(request: dict[str, Any], response: dict[str, Any]) -> None:
+    _exchange_logger().info(json.dumps({"request": _mask(request), "response": _mask(response)}, ensure_ascii=False, default=str))
 
 
 class NewsQuery(BaseModel):
@@ -63,6 +99,10 @@ class KisClient:
                     "appsecret": self.cfg.kis_app_secret,
                 },
             )
+            log_exchange(
+                {"method": "POST", "path": TOKEN_PATH, "json": {"grant_type": "client_credentials", "appkey": self.cfg.kis_app_key, "appsecret": self.cfg.kis_app_secret}},
+                {"status_code": response.status_code, "headers": dict(response.headers), "body": _safe_body(response.text)},
+            )
             response.raise_for_status()
             payload = response.json()
             token = str(payload["access_token"])
@@ -88,6 +128,10 @@ class KisClient:
                     "custtype": "P",
                     "content-type": "application/json; charset=utf-8",
                 },
+            )
+            log_exchange(
+                {"method": "GET", "path": NEWS_PATH, "params": params, "headers": dict(response.request.headers)},
+                {"status_code": response.status_code, "headers": dict(response.headers), "body": _safe_body(response.text)},
             )
             if response.status_code == 401 and attempt == 0:
                 await self.redis.delete("kis:access_token")
@@ -129,3 +173,12 @@ def normalize(row: dict[str, Any]) -> dict[str, Any]:
         "source_url": row.get("url"),
         "raw": row,
     }
+
+
+def is_stock_related(row: dict[str, Any]) -> bool:
+    """Keep only rows tied to a listed stock or an explicitly stock-market title."""
+    code = str(row.get("iscd1") or row.get("stock_code") or row.get("stck_shrn_iscd") or "")
+    if re.fullmatch(r"\d{6}", code):
+        return True
+    title = str(row.get("hts_pbnt_titl_cntt") or row.get("news_titl") or row.get("title") or "")
+    return any(keyword in title for keyword in ("코스피", "코스닥", "상장", "주가", "종목", "증권", "공시", "배당", "자사주"))
