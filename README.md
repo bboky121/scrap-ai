@@ -31,6 +31,12 @@ curl -X POST http://localhost:8100/internal/ingestions -H 'x-internal-token: cha
 
 자동 수집은 Celery Beat가 `Asia/Seoul` 시간대를 기준으로 매시 정각(`00분`)에 실행합니다.
 
+수집기는 종목코드가 있거나 주식시장 관련 키워드가 있는 항목만 저장합니다. KIS 토큰·뉴스 API의 요청/응답 전문은 인증값과 토큰을 마스킹한 JSON Lines 로그로 기록합니다. Docker 실행 시 호스트의 `./logs/pipeline/kis-api.log`에서 확인할 수 있습니다.
+
+```bash
+tail -f logs/pipeline/kis-api.log
+```
+
 호스트 서비스 포트: 웹 `3100`, Nest API `4100`, Python API/docs `8100/docs`. PostgreSQL과 Valkey는 Docker 내부 네트워크에서만 접근합니다.
 
 ## KIS 계약

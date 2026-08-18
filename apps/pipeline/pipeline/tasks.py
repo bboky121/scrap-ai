@@ -15,7 +15,7 @@ from sqlalchemy import text
 
 from .db import session
 from .discord import notify_error
-from .kis import KisClient, KisEnvelope, normalize
+from .kis import KisClient, KisEnvelope, is_stock_related, normalize
 from .settings import settings
 from .summary import briefing, summarize
 
@@ -57,6 +57,8 @@ def ingest(self: Any) -> dict[str, Any]:
             {"id": run_id, "status": "RUNNING", "source": source},
         )
         for raw in envelope.output:
+            if not is_stock_related(raw):
+                continue
             item = normalize(raw)
             basis = json.dumps(raw, ensure_ascii=False, sort_keys=True)
             external_id = str(raw.get("news_srno") or hashlib.sha256(basis.encode()).hexdigest())

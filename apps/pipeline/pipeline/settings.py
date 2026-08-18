@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     kis_app_key: str = ""
     kis_app_secret: str = ""
     kis_base_url: str = "https://openapi.koreainvestment.com:9443"
+    kis_log_dir: str = "/var/log/kis-brief"
 
 
 @lru_cache
