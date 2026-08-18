@@ -13,13 +13,17 @@ export class DiscordService {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           username: '시그널브리프 알림',
-          embeds: [{
-            title: `🚨 ${title}`,
-            description: detail.slice(0, 3500),
-            color: 15_143_616,
-            fields: Object.entries(context).slice(0, 10).map(([name, value]) => ({ name, value: String(value).slice(0, 1000), inline: true })),
-            timestamp: new Date().toISOString(),
-          }],
+          embeds: [
+            {
+              title: `🚨 ${title}`,
+              description: detail.slice(0, 3500),
+              color: 15_143_616,
+              fields: Object.entries(context)
+                .slice(0, 10)
+                .map(([name, value]) => ({ name, value: String(value).slice(0, 1000), inline: true })),
+              timestamp: new Date().toISOString(),
+            },
+          ],
         }),
         signal: AbortSignal.timeout(5000),
       });

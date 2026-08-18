@@ -11,9 +11,7 @@ def summarize(title: str, kind: str, stock_code: str | None, has_body: bool = Fa
     words = [w for w in re.findall(r"[가-힣A-Za-z0-9]+", title) if len(w) > 1][:5]
     score = sum(w in title for w in POSITIVE) - sum(w in title for w in NEGATIVE)
     sentiment = "POSITIVE" if score > 0 else "NEGATIVE" if score < 0 else "NEUTRAL"
-    label = {"NEWS": "주요 뉴스", "DISCLOSURE": "기업 공시", "MARKET_COMMENTARY": "시장 시황"}.get(
-        kind, "시장 소식"
-    )
+    label = {"NEWS": "주요 뉴스", "DISCLOSURE": "기업 공시", "MARKET_COMMENTARY": "시장 시황"}.get(kind, "시장 소식")
     return {
         "bullets": [
             f"{label}: {title}",

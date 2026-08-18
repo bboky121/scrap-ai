@@ -10,28 +10,53 @@ export class AuthController {
 
   @Post('demo')
   async demo(@Req() req: Request) {
-    if (process.env.DEMO_AUTH_ENABLED === 'false') throw new ServiceUnavailableException('데모 로그인이 비활성화되었습니다.');
-    const user = await this.prisma.user.upsert({ where: { email: 'demo@kisbrief.local' }, update: {}, create: { email: 'demo@kisbrief.local', name: '데모 투자자' } });
+    if (process.env.DEMO_AUTH_ENABLED === 'false')
+      throw new ServiceUnavailableException('데모 로그인이 비활성화되었습니다.');
+    const user = await this.prisma.user.upsert({
+      where: { email: 'demo@kisbrief.local' },
+      update: {},
+      create: { email: 'demo@kisbrief.local', name: '데모 투자자' },
+    });
     req.session.userId = user.id;
     return { user: { id: user.id, email: user.email, name: user.name } };
   }
 
   @Post('logout')
-  logout(@Req() req: Request) { return new Promise((resolve) => req.session.destroy(() => resolve({ ok: true }))); }
+  logout(@Req() req: Request) {
+    return new Promise((resolve) => req.session.destroy(() => resolve({ ok: true })));
+  }
 
   @Get('me')
   async me(@Req() req: Request) {
     if (!req.session.userId) return { user: null };
-    return { user: await this.prisma.user.findUnique({ where: { id: req.session.userId }, select: { id: true, email: true, name: true, provider: true } }) };
+    return {
+      user: await this.prisma.user.findUnique({
+        where: { id: req.session.userId },
+        select: { id: true, email: true, name: true, provider: true },
+      }),
+    };
   }
 
   @Get('google') @UseGuards(AuthGuard('google')) google() {}
   @Get('kakao') @UseGuards(AuthGuard('kakao')) kakao() {}
-  @Get('google/callback') @UseGuards(AuthGuard('google')) googleCallback(@Req() req: Request, @Res() res: Response) { return this.oauthCallback(req, res); }
-  @Get('kakao/callback') @UseGuards(AuthGuard('kakao')) kakaoCallback(@Req() req: Request, @Res() res: Response) { return this.oauthCallback(req, res); }
+  @Get('google/callback') @UseGuards(AuthGuard('google')) googleCallback(@Req() req: Request, @Res() res: Response) {
+    return this.oauthCallback(req, res);
+  }
+  @Get('kakao/callback') @UseGuards(AuthGuard('kakao')) kakaoCallback(@Req() req: Request, @Res() res: Response) {
+    return this.oauthCallback(req, res);
+  }
   private async oauthCallback(req: Request, res: Response) {
     const identity = req.user as OAuthIdentity;
-    const user = await this.prisma.user.upsert({ where: { email: identity.email }, update: { name: identity.name, provider: identity.provider, providerId: identity.providerId }, create: { email: identity.email, name: identity.name, provider: identity.provider, providerId: identity.providerId } });
+    const user = await this.prisma.user.upsert({
+      where: { email: identity.email },
+      update: { name: identity.name, provider: identity.provider, providerId: identity.providerId },
+      create: {
+        email: identity.email,
+        name: identity.name,
+        provider: identity.provider,
+        providerId: identity.providerId,
+      },
+    });
     req.session.userId = user.id;
     res.redirect(`${process.env.WEB_URL ?? 'http://localhost:3000'}/account`);
   }

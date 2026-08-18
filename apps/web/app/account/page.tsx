@@ -1,3 +1,30 @@
 'use client';
 import { useState } from 'react';
-export default function Account(){const [state,setState]=useState('로그인 전');async function login(){const r=await fetch(`${process.env.NEXT_PUBLIC_API_URL??'http://localhost:4000'}/auth/demo`,{method:'POST',credentials:'include'});setState(r.ok?'데모 투자자로 로그인됨':'API 연결 필요')}return <main><section className="page-title"><span className="eyebrow">MY ACCOUNT</span><h1>내 계정</h1></section><section className="panel account"><div className="avatar">투</div><div><h2>{state}</h2><p>OAuth 키가 없을 때 사용할 수 있는 안전한 데모 계정입니다.</p></div><button className="button" onClick={login}>데모 로그인</button></section></main>}
+export default function Account() {
+  const [state, setState] = useState('로그인 전');
+  async function login() {
+    const r = await fetch(`${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000'}/auth/demo`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+    setState(r.ok ? '데모 투자자로 로그인됨' : 'API 연결 필요');
+  }
+  return (
+    <main>
+      <section className="page-title">
+        <span className="eyebrow">MY ACCOUNT</span>
+        <h1>내 계정</h1>
+      </section>
+      <section className="panel account">
+        <div className="avatar">투</div>
+        <div>
+          <h2>{state}</h2>
+          <p>OAuth 키가 없을 때 사용할 수 있는 안전한 데모 계정입니다.</p>
+        </div>
+        <button className="button" onClick={login}>
+          데모 로그인
+        </button>
+      </section>
+    </main>
+  );
+}

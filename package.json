@@ -1,1 +1,24 @@
-{"name":"kis-brief","private":true,"packageManager":"pnpm@9.15.4","scripts":{"dev":"pnpm -r --parallel dev","build":"pnpm -r build","lint":"pnpm -r lint","test":"pnpm -r test","db:generate":"pnpm --filter @kis/api prisma:generate","db:migrate":"pnpm --filter @kis/api prisma:migrate","db:seed":"pnpm --filter @kis/api prisma:seed"},"devDependencies":{"turbo":"^2.4.0"}}
+{
+  "name": "kis-brief",
+  "private": true,
+  "packageManager": "pnpm@9.15.4",
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "format": "pnpm format:node && pnpm format:python",
+    "format:check": "pnpm format:node:check && pnpm format:python:check",
+    "format:node": "prettier --write \"apps/**/*.{ts,tsx,js,jsx,json,css,md,yml,yaml}\" \"*.{json,md,yml,yaml}\"",
+    "format:node:check": "prettier --check \"apps/**/*.{ts,tsx,js,jsx,json,css,md,yml,yaml}\" \"*.{json,md,yml,yaml}\"",
+    "format:python": "./scripts/ruff format apps/pipeline",
+    "format:python:check": "./scripts/ruff format --check apps/pipeline",
+    "db:generate": "pnpm --filter @kis/api prisma:generate",
+    "db:migrate": "pnpm --filter @kis/api prisma:migrate",
+    "db:seed": "pnpm --filter @kis/api prisma:seed"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2",
+    "turbo": "^2.4.0"
+  }
+}
