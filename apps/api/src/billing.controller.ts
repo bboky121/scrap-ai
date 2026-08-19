@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Patch, Post, Req } from '@nestjs/common';
-import { PlanCode } from '@prisma/client';
+import { PlanCode } from './generated/prisma/client';
 import { Request } from 'express';
 import { PrismaService } from './prisma.service';
 import { userId } from './session';
