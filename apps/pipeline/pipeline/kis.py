@@ -153,81 +153,86 @@ class KisClient:
             return envelope
         raise RuntimeError("KIS request exhausted retries")
 
-    async def top_trading_value_stocks(self, limit: int = 20) -> list[str]:
-        """Return KRX stocks ordered by 거래금액순 from the official volume-rank API."""
-        params = {
-            "FID_COND_MRKT_DIV_CODE": "J",
-            "FID_COND_SCR_DIV_CODE": "20171",
-            "FID_INPUT_ISCD": "0000",
-            "FID_DIV_CLS_CODE": "0",
-            "FID_BLNG_CLS_CODE": "3",
-            "FID_TRGT_CLS_CODE": "111111111",
-            "FID_TRGT_EXLS_CLS_CODE": "0000000000",
-            "FID_RANK_SORT_CLS_CODE": "0",
-            "FID_INPUT_PRICE_1": "",
-            "FID_INPUT_PRICE_2": "",
-            "FID_VOL_CNT": "",
-        }
+    async def _ranking(self, path: str, tr_id: str, params: dict[str, str], limit: int) -> list[str]:
         token = await self.token()
         response = await self.client.get(
-            VOLUME_RANK_PATH,
+            path,
             params=params,
             headers={
                 "authorization": f"Bearer {token}",
                 "appkey": self.cfg.kis_app_key,
                 "appsecret": self.cfg.kis_app_secret,
-                "tr_id": VOLUME_RANK_TR_ID,
+                "tr_id": tr_id,
                 "custtype": "P",
                 "content-type": "application/json; charset=utf-8",
             },
         )
         log_exchange(
-            {"method": "GET", "path": VOLUME_RANK_PATH, "params": params, "headers": dict(response.request.headers)},
+            {"method": "GET", "path": path, "params": params, "headers": dict(response.request.headers)},
             {"status_code": response.status_code, "headers": dict(response.headers), "body": _safe_body(response.text)},
         )
         response.raise_for_status()
-        payload = KisEnvelope.model_validate(response.json())
-        if payload.rt_cd != "0":
-            raise RuntimeError(f"KIS {payload.msg_cd}: {payload.msg1}")
-        codes = [str(row.get("stck_shrn_iscd") or row.get("iscd1") or "") for row in payload.output]
+        envelope = KisEnvelope.model_validate(response.json())
+        if envelope.rt_cd != "0":
+            raise RuntimeError(f"KIS {envelope.msg_cd}: {envelope.msg1}")
+        codes = [str(row.get("stck_shrn_iscd") or row.get("iscd1") or "") for row in envelope.output]
         return [code for code in codes if re.fullmatch(r"\d{6}", code)][:limit]
 
-    async def top_market_cap_stocks(self, limit: int = 20) -> list[str]:
-        """Return KRX stocks ordered by market capitalization from KIS."""
-        params = {
-            "FID_COND_MRKT_DIV_CODE": "J",
-            "FID_COND_SCR_DIV_CODE": "20174",
-            "FID_INPUT_ISCD": "0000",
-            "FID_DIV_CLS_CODE": "0",
-            "FID_INPUT_PRICE_1": "",
-            "FID_INPUT_PRICE_2": "",
-            "FID_VOL_CNT": "",
-            "FID_TRGT_CLS_CODE": "0",
-            "FID_TRGT_EXLS_CLS_CODE": "0",
-        }
-        token = await self.token()
-        response = await self.client.get(
-            MARKET_CAP_PATH,
-            params=params,
-            headers={
-                "authorization": f"Bearer {token}",
-                "appkey": self.cfg.kis_app_key,
-                "appsecret": self.cfg.kis_app_secret,
-                "tr_id": MARKET_CAP_TR_ID,
-                "custtype": "P",
-                "content-type": "application/json; charset=utf-8",
+    async def top_trading_value_stocks(self, limit: int = 20) -> list[str]:
+        """Return KRX stocks ordered by trading value from the volume-rank API."""
+        return await self._ranking(
+            VOLUME_RANK_PATH,
+            VOLUME_RANK_TR_ID,
+            {
+                "FID_COND_MRKT_DIV_CODE": "J",
+                "FID_COND_SCR_DIV_CODE": "20171",
+                "FID_INPUT_ISCD": "0000",
+                "FID_DIV_CLS_CODE": "0",
+                "FID_BLNG_CLS_CODE": "3",
+                "FID_TRGT_CLS_CODE": "111111111",
+                "FID_TRGT_EXLS_CLS_CODE": "0000000000",
+                "FID_RANK_SORT_CLS_CODE": "0",
+                "FID_INPUT_PRICE_1": "",
+                "FID_INPUT_PRICE_2": "",
+                "FID_VOL_CNT": "",
             },
+            limit,
         )
-        log_exchange(
-            {"method": "GET", "path": MARKET_CAP_PATH, "params": params, "headers": dict(response.request.headers)},
-            {"status_code": response.status_code, "headers": dict(response.headers), "body": _safe_body(response.text)},
+
+    async def top_market_cap_stocks(self, limit: int = 20) -> list[str]:
+        """Return KRX stocks ordered by market capitalization."""
+        return await self._ranking(
+            MARKET_CAP_PATH,
+            MARKET_CAP_TR_ID,
+            {
+                "FID_COND_MRKT_DIV_CODE": "J",
+                "FID_COND_SCR_DIV_CODE": "20174",
+                "FID_INPUT_ISCD": "0000",
+                "FID_DIV_CLS_CODE": "0",
+                "FID_INPUT_PRICE_1": "",
+                "FID_INPUT_PRICE_2": "",
+                "FID_VOL_CNT": "",
+                "FID_TRGT_CLS_CODE": "0",
+                "FID_TRGT_EXLS_CLS_CODE": "0",
+            },
+            limit,
         )
-        response.raise_for_status()
-        payload = KisEnvelope.model_validate(response.json())
-        if payload.rt_cd != "0":
-            raise RuntimeError(f"KIS {payload.msg_cd}: {payload.msg1}")
-        codes = [str(row.get("stck_shrn_iscd") or row.get("iscd1") or "") for row in payload.output]
-        return [code for code in codes if re.fullmatch(r"\d{6}", code)][:limit]
+
+    async def top_stock_news(self, limit: int = 20) -> KisEnvelope:
+        trading_codes = await self.top_trading_value_stocks(limit)
+        market_cap_codes = await self.top_market_cap_stocks(limit)
+        codes = list(dict.fromkeys([*trading_codes, *market_cap_codes]))
+        if not codes:
+            raise RuntimeError("KIS ranking APIs returned no stock codes")
+
+        output: list[dict[str, Any]] = []
+        for code in codes:
+            try:
+                envelope = await self.news(NewsQuery(stock_code=code))
+            except Exception as exc:
+                raise RuntimeError(f"KIS news collection failed for stock {code}: {exc}") from exc
+            output.extend(envelope.output)
+        return KisEnvelope(rt_cd="0", output=output)
 
 
 def normalize(row: dict[str, Any]) -> dict[str, Any]:

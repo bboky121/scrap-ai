@@ -15,7 +15,7 @@ from sqlalchemy import text
 
 from .db import session
 from .discord import notify_error
-from .kis import KisClient, KisEnvelope, NewsQuery, is_stock_related, normalize
+from .kis import KisClient, KisEnvelope, is_stock_related, normalize
 from .settings import settings
 from .summary import briefing, summarize
 
@@ -38,18 +38,7 @@ async def fetch() -> tuple[KisEnvelope, str]:
     try:
         if not client.configured:
             return fixture(), "DEMO_FIXTURE"
-        trading_value_codes = await client.top_trading_value_stocks(limit=cfg.kis_top_stock_count)
-        market_cap_codes = await client.top_market_cap_stocks(limit=cfg.kis_top_stock_count)
-        codes = list(dict.fromkeys([*trading_value_codes, *market_cap_codes]))
-        if not codes:
-            raise RuntimeError("KIS 거래대금 순위에서 종목을 찾지 못했습니다")
-        output: list[dict[str, Any]] = []
-        for code in codes:
-            response = await client.news(NewsQuery(stock_code=code))
-            output.extend(response.output)
-        return KisEnvelope(rt_cd="0", output=output), "KIS"
-    except Exception:
-        return fixture(), "DEMO_FIXTURE"
+        return await client.top_stock_news(limit=cfg.kis_top_stock_count), "KIS"
     finally:
         await redis.aclose()
 
