@@ -53,6 +53,19 @@ nav {
   font-size: 12px;
   font-weight: 700;
 }
+.login-link {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 16px;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.login-link:hover {
+  border-color: #b9c5d8;
+  background: var(--bg);
+}
 main {
   max-width: 1120px;
   margin: auto;

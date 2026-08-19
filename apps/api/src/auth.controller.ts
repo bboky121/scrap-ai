@@ -1,8 +1,28 @@
-import { Controller, Get, Post, Req, Res, ServiceUnavailableException, UseGuards } from '@nestjs/common';
+import {
+  CanActivate,
+  Controller,
+  Get,
+  Injectable,
+  Post,
+  Req,
+  Res,
+  ServiceUnavailableException,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
 import { PrismaService } from './prisma.service';
 import { OAuthIdentity } from './oauth.strategies';
+
+@Injectable()
+export class GoogleConfiguredGuard implements CanActivate {
+  canActivate() {
+    if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+      throw new ServiceUnavailableException('Google 로그인이 설정되지 않았습니다.');
+    }
+    return true;
+  }
+}
 
 @Controller('auth')
 export class AuthController {
@@ -37,7 +57,12 @@ export class AuthController {
     };
   }
 
-  @Get('google') @UseGuards(AuthGuard('google')) google() {}
+  @Get('providers')
+  providers() {
+    return { google: Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) };
+  }
+
+  @Get('google') @UseGuards(GoogleConfiguredGuard, AuthGuard('google')) google() {}
   @Get('kakao') @UseGuards(AuthGuard('kakao')) kakao() {}
   @Get('google/callback') @UseGuards(AuthGuard('google')) googleCallback(@Req() req: Request, @Res() res: Response) {
     return this.oauthCallback(req, res);

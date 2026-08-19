@@ -11,6 +11,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const context = host.switchToHttp();
     const request = context.getRequest<Request>();
     const response = context.getResponse<Response>();
+    if (response.headersSent) return;
     const status = exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
     const message = exception instanceof Error ? exception.message : 'Unknown error';
     if (status >= 500) {
@@ -26,7 +27,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     }
     response.status(status).json({
       statusCode: status,
-      message: status >= 500 ? '서버 오류가 발생했습니다.' : message,
+      message: status >= 500 && !(exception instanceof HttpException) ? '서버 오류가 발생했습니다.' : message,
       path: request.originalUrl,
       timestamp: new Date().toISOString(),
     });

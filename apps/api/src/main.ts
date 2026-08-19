@@ -3,14 +3,16 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import session = require('express-session');
 import { RedisStore } from 'connect-redis';
-import Redis from 'ioredis';
+import { createClient } from 'redis';
 import { AppModule } from './app.module';
 import { DiscordService } from './discord.service';
 import { HttpExceptionFilter } from './http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const redis = new Redis(process.env.VALKEY_URL ?? 'redis://localhost:6379/0');
+  const redis = createClient({ url: process.env.VALKEY_URL ?? 'redis://localhost:6379/0' });
+  redis.on('error', (error) => console.error('Session Redis error', error));
+  await redis.connect();
   app.enableCors({ origin: process.env.WEB_URL ?? 'http://localhost:3000', credentials: true });
   app.use(
     session({
