@@ -42,7 +42,7 @@
     "@types/passport-google-oauth20": "^2.0.16",
     "eslint": "^10.8.1",
     "jest": "^30.4.2",
-    "prisma": "^7.9.1",
+    "prisma": "^6.19.3",
     "ts-jest": "^29.2.5",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
