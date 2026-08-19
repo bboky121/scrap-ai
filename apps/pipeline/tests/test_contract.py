@@ -1,4 +1,4 @@
-from pipeline.kis import NEWS_PATH, NEWS_TR_ID, NewsQuery, normalize
+from pipeline.kis import NEWS_PATH, NEWS_TR_ID, VOLUME_RANK_PATH, VOLUME_RANK_TR_ID, NewsQuery, normalize
 
 
 def test_domestic_news_contract() -> None:
@@ -14,6 +14,11 @@ def test_domestic_news_contract() -> None:
         "FID_RANK_SORT_CLS_CODE",
         "FID_INPUT_SRNO",
     }
+
+
+def test_volume_rank_contract() -> None:
+    assert VOLUME_RANK_PATH == "/uapi/domestic-stock/v1/quotations/volume-rank"
+    assert VOLUME_RANK_TR_ID == "FHPST01710000"
 
 
 def test_kis_time_is_kst_and_dorg_classifies_disclosure() -> None:

@@ -21,7 +21,7 @@ VOLUME_RANK_PATH = "/uapi/domestic-stock/v1/quotations/volume-rank"
 MARKET_CAP_PATH = "/uapi/domestic-stock/v1/ranking/market-cap"
 # KIS Developers: 종합 시황/공시(제목) [국내주식-141].
 NEWS_TR_ID = "FHKST01011800"
-VOLUME_RANK_TR_ID = "FHKST01710000"
+VOLUME_RANK_TR_ID = "FHPST01710000"
 MARKET_CAP_TR_ID = "FHPST01740000"
 _EXCHANGE_LOGGER = logging.getLogger("kis.exchange")
 _EXCHANGE_LOGGER.setLevel(logging.INFO)
