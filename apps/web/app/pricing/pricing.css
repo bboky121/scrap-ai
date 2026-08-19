@@ -1,0 +1,5 @@
+.subscription-button {
+  background: #eef1f5;
+  color: var(--muted);
+  cursor: not-allowed;
+}

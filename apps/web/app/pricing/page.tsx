@@ -1,5 +1,6 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import './pricing.css';
 const plans = [
   { code: 'WEEK', name: '1주', price: '3,900', sub: '가볍게 시작하기' },
   { code: 'MONTH', name: '1개월', price: '9,900', sub: '꾸준히 시장 보기', best: true },
@@ -7,8 +8,24 @@ const plans = [
 ];
 export default function Pricing() {
   const [msg, setMsg] = useState('');
+  const [subscribed, setSubscribed] = useState(false);
+  const [endsAt, setEndsAt] = useState<string | null>(null);
+  const api = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4100';
+
+  useEffect(() => {
+    fetch(`${api}/subscriptions/me`, { credentials: 'include' })
+      .then((response) => (response.ok ? response.json() : Promise.reject()))
+      .then((data: { subscription: { endsAt: string } | null }) => {
+        setSubscribed(!!data.subscription);
+        setEndsAt(data.subscription?.endsAt ?? null);
+      })
+      .catch(() => {
+        setSubscribed(false);
+        setEndsAt(null);
+      });
+  }, [api]);
+
   async function pay(code: string, result = 'success') {
-    const api = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
     await fetch(`${api}/auth/demo`, { method: 'POST', credentials: 'include' });
     const r = await fetch(`${api}/payments/simulate`, {
       method: 'POST',
@@ -16,7 +33,14 @@ export default function Pricing() {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ planCode: code, result, cardLast4: '4242', autoRenew: true }),
     });
-    setMsg(r.ok ? '가상 결제가 완료됐어요. 과거 브리핑이 열렸습니다.' : '결제 시뮬레이션에 실패했어요.');
+    if (!r.ok) {
+      setMsg('결제 시뮬레이션에 실패했어요.');
+      return;
+    }
+    const data = (await r.json()) as { subscription?: { endsAt: string } };
+    setSubscribed(true);
+    setEndsAt(data.subscription?.endsAt ?? null);
+    setMsg('가상 결제가 완료됐어요. 과거 브리핑이 열렸습니다.');
   }
   return (
     <main>
@@ -47,14 +71,22 @@ export default function Pricing() {
               <li>✓ 시간대별 AI 브리핑</li>
               <li>✓ 자동 갱신 언제든 해지</li>
             </ul>
-            <button className="button" onClick={() => pay(x.code)}>
-              가상 결제로 시작하기
+            <button
+              className={subscribed ? 'button subscription-button' : 'button'}
+              disabled={subscribed}
+              onClick={() => pay(x.code)}
+            >
+              {subscribed ? '현재 구독 중입니다.' : '가상 결제로 시작하기'}
             </button>
           </article>
         ))}
       </section>
       {msg && <div className="toast">{msg}</div>}
-      <p className="payment-note">실제 결제는 발생하지 않는 포트폴리오용 시뮬레이션입니다.</p>
+      <p className="payment-note">
+        {subscribed && endsAt
+          ? `${new Intl.DateTimeFormat('ko-KR', { dateStyle: 'medium' }).format(new Date(endsAt))}까지 구독이 유지됩니다.`
+          : '실제 결제는 발생하지 않는 포트폴리오용 시뮬레이션입니다.'}
+      </p>
     </main>
   );
 }
