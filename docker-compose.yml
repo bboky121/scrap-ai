@@ -7,6 +7,7 @@ x-app-env: &app-env
   KIS_APP_SECRET: ${KIS_APP_SECRET:-}
   KIS_BASE_URL: ${KIS_BASE_URL:-https://openapi.koreainvestment.com:9443}
   KIS_LOG_DIR: ${KIS_LOG_DIR:-/var/log/kis-brief}
+  KIS_TOP_STOCK_COUNT: ${KIS_TOP_STOCK_COUNT:-20}
   SESSION_SECRET: ${SESSION_SECRET:-development-session-secret-change-me}
   WEB_URL: ${WEB_URL:-http://localhost:3100}
   API_PUBLIC_URL: ${API_PUBLIC_URL:-http://localhost:4100}

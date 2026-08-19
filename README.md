@@ -31,7 +31,7 @@ curl -X POST http://localhost:8100/internal/ingestions -H 'x-internal-token: cha
 
 자동 수집은 Celery Beat가 `Asia/Seoul` 시간대를 기준으로 매시 정각(`00분`)에 실행합니다.
 
-수집기는 종목코드가 있거나 주식시장 관련 키워드가 있는 항목만 저장합니다. KIS 토큰·뉴스 API의 요청/응답 전문은 인증값과 토큰을 마스킹한 JSON Lines 로그로 기록합니다. Docker 실행 시 호스트의 `./logs/pipeline/kis-api.log`에서 확인할 수 있습니다.
+수집기는 KIS 국내주식 거래대금 순위와 시가총액 순위 API에서 각각 상위 `KIS_TOP_STOCK_COUNT`개(기본 20개) 종목을 조회한 뒤, 두 목록의 합집합 종목 코드를 뉴스 API에 전달합니다. 따라서 전체 시장 뉴스가 아니라 거래대금 또는 시가총액 상위 종목의 소식만 저장합니다. KIS 토큰·순위·뉴스 API의 요청/응답 전문은 인증값과 토큰을 마스킹한 JSON Lines 로그로 기록합니다. Docker 실행 시 호스트의 `./logs/pipeline/kis-api.log`에서 확인할 수 있습니다.
 
 ```bash
 tail -f logs/pipeline/kis-api.log

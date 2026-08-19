@@ -17,8 +17,12 @@ from .settings import settings
 
 TOKEN_PATH = "/oauth2/tokenP"
 NEWS_PATH = "/uapi/domestic-stock/v1/quotations/news-title"
+VOLUME_RANK_PATH = "/uapi/domestic-stock/v1/quotations/volume-rank"
+MARKET_CAP_PATH = "/uapi/domestic-stock/v1/ranking/market-cap"
 # KIS Developers: 종합 시황/공시(제목) [국내주식-141].
 NEWS_TR_ID = "FHKST01011800"
+VOLUME_RANK_TR_ID = "FHKST01710000"
+MARKET_CAP_TR_ID = "FHPST01740000"
 _EXCHANGE_LOGGER = logging.getLogger("kis.exchange")
 _EXCHANGE_LOGGER.setLevel(logging.INFO)
 _EXCHANGE_LOGGER.propagate = False
@@ -148,6 +152,82 @@ class KisClient:
                 raise RuntimeError(f"KIS {envelope.msg_cd}: {envelope.msg1}")
             return envelope
         raise RuntimeError("KIS request exhausted retries")
+
+    async def top_trading_value_stocks(self, limit: int = 20) -> list[str]:
+        """Return KRX stocks ordered by 거래금액순 from the official volume-rank API."""
+        params = {
+            "FID_COND_MRKT_DIV_CODE": "J",
+            "FID_COND_SCR_DIV_CODE": "20171",
+            "FID_INPUT_ISCD": "0000",
+            "FID_DIV_CLS_CODE": "0",
+            "FID_BLNG_CLS_CODE": "3",
+            "FID_TRGT_CLS_CODE": "111111111",
+            "FID_TRGT_EXLS_CLS_CODE": "0000000000",
+            "FID_RANK_SORT_CLS_CODE": "0",
+            "FID_INPUT_PRICE_1": "",
+            "FID_INPUT_PRICE_2": "",
+            "FID_VOL_CNT": "",
+        }
+        token = await self.token()
+        response = await self.client.get(
+            VOLUME_RANK_PATH,
+            params=params,
+            headers={
+                "authorization": f"Bearer {token}",
+                "appkey": self.cfg.kis_app_key,
+                "appsecret": self.cfg.kis_app_secret,
+                "tr_id": VOLUME_RANK_TR_ID,
+                "custtype": "P",
+                "content-type": "application/json; charset=utf-8",
+            },
+        )
+        log_exchange(
+            {"method": "GET", "path": VOLUME_RANK_PATH, "params": params, "headers": dict(response.request.headers)},
+            {"status_code": response.status_code, "headers": dict(response.headers), "body": _safe_body(response.text)},
+        )
+        response.raise_for_status()
+        payload = KisEnvelope.model_validate(response.json())
+        if payload.rt_cd != "0":
+            raise RuntimeError(f"KIS {payload.msg_cd}: {payload.msg1}")
+        codes = [str(row.get("stck_shrn_iscd") or row.get("iscd1") or "") for row in payload.output]
+        return [code for code in codes if re.fullmatch(r"\d{6}", code)][:limit]
+
+    async def top_market_cap_stocks(self, limit: int = 20) -> list[str]:
+        """Return KRX stocks ordered by market capitalization from KIS."""
+        params = {
+            "FID_COND_MRKT_DIV_CODE": "J",
+            "FID_COND_SCR_DIV_CODE": "20174",
+            "FID_INPUT_ISCD": "0000",
+            "FID_DIV_CLS_CODE": "0",
+            "FID_INPUT_PRICE_1": "",
+            "FID_INPUT_PRICE_2": "",
+            "FID_VOL_CNT": "",
+            "FID_TRGT_CLS_CODE": "0",
+            "FID_TRGT_EXLS_CLS_CODE": "0",
+        }
+        token = await self.token()
+        response = await self.client.get(
+            MARKET_CAP_PATH,
+            params=params,
+            headers={
+                "authorization": f"Bearer {token}",
+                "appkey": self.cfg.kis_app_key,
+                "appsecret": self.cfg.kis_app_secret,
+                "tr_id": MARKET_CAP_TR_ID,
+                "custtype": "P",
+                "content-type": "application/json; charset=utf-8",
+            },
+        )
+        log_exchange(
+            {"method": "GET", "path": MARKET_CAP_PATH, "params": params, "headers": dict(response.request.headers)},
+            {"status_code": response.status_code, "headers": dict(response.headers), "body": _safe_body(response.text)},
+        )
+        response.raise_for_status()
+        payload = KisEnvelope.model_validate(response.json())
+        if payload.rt_cd != "0":
+            raise RuntimeError(f"KIS {payload.msg_cd}: {payload.msg1}")
+        codes = [str(row.get("stck_shrn_iscd") or row.get("iscd1") or "") for row in payload.output]
+        return [code for code in codes if re.fullmatch(r"\d{6}", code)][:limit]
 
 
 def normalize(row: dict[str, Any]) -> dict[str, Any]:
