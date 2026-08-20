@@ -172,7 +172,7 @@ class KisClient:
             return envelope
         raise RuntimeError("KIS request exhausted retries")
 
-    async def _ranking(self, path: str, tr_id: str, params: dict[str, str], limit: int) -> list[str]:
+    async def _ranking_details(self, path: str, tr_id: str, params: dict[str, str], limit: int) -> list[dict[str, str]]:
         for attempt in range(4):
             token = await self.token()
             await self._wait_for_rate_limit()
@@ -200,9 +200,16 @@ class KisClient:
             envelope = KisEnvelope.model_validate(response.json())
             if envelope.rt_cd != "0":
                 raise RuntimeError(f"KIS {envelope.msg_cd}: {envelope.msg1}")
-            codes = [str(row.get("mksc_shrn_iscd") or row.get("stck_shrn_iscd") or row.get("iscd1") or "") for row in envelope.output]
-            return [code for code in codes if re.fullmatch(r"\d{6}", code)][:limit]
+            records = []
+            for row in envelope.output:
+                code = str(row.get("mksc_shrn_iscd") or row.get("stck_shrn_iscd") or row.get("iscd1") or "")
+                if re.fullmatch(r"\d{6}", code):
+                    records.append({"code": code, "name": str(row.get("hts_kor_isnm") or row.get("prdt_name") or "")})
+            return records[:limit]
         raise RuntimeError(f"KIS ranking request exhausted retries: {path}")
+
+    async def _ranking(self, path: str, tr_id: str, params: dict[str, str], limit: int) -> list[str]:
+        return [item["code"] for item in await self._ranking_details(path, tr_id, params, limit)]
 
     async def top_trading_value_stocks(self, limit: int = 20) -> list[str]:
         """Return KRX stocks ordered by trading value from the volume-rank API."""
@@ -245,10 +252,15 @@ class KisClient:
         )
 
     async def top_stock_news(self, limit: int = 20) -> KisEnvelope:
-        trading_codes = await self.top_trading_value_stocks(limit)
+        trading_records = await self._ranking_details(VOLUME_RANK_PATH, VOLUME_RANK_TR_ID, {
+            "FID_COND_MRKT_DIV_CODE": "J", "FID_COND_SCR_DIV_CODE": "20171", "FID_INPUT_ISCD": "0000", "FID_DIV_CLS_CODE": "0", "FID_BLNG_CLS_CODE": "3", "FID_TRGT_CLS_CODE": "111111111", "FID_TRGT_EXLS_CLS_CODE": "0000000000", "FID_RANK_SORT_CLS_CODE": "0", "FID_INPUT_PRICE_1": "", "FID_INPUT_PRICE_2": "", "FID_VOL_CNT": ""
+        }, limit)
         await asyncio.sleep(self.cfg.kis_request_delay_seconds)
-        market_cap_codes = await self.top_market_cap_stocks(limit)
-        codes = list(dict.fromkeys([*trading_codes, *market_cap_codes]))
+        market_records = await self._ranking_details(MARKET_CAP_PATH, MARKET_CAP_TR_ID, {
+            "FID_COND_MRKT_DIV_CODE": "J", "FID_COND_SCR_DIV_CODE": "20174", "FID_INPUT_ISCD": "0000", "FID_DIV_CLS_CODE": "0", "FID_INPUT_PRICE_1": "", "FID_INPUT_PRICE_2": "", "FID_VOL_CNT": "", "FID_TRGT_CLS_CODE": "0", "FID_TRGT_EXLS_CLS_CODE": "0"
+        }, limit)
+        records = {item["code"]: item for item in [*trading_records, *market_records]}
+        codes = list(records)
         if not codes:
             raise RuntimeError("KIS ranking APIs returned no stock codes")
 
@@ -258,6 +270,7 @@ class KisClient:
                 await asyncio.sleep(self.cfg.kis_news_delay_seconds)
             try:
                 envelope = await self.news(NewsQuery(stock_code=code))
+                envelope.output = [{**row, "stock_code": code, "stock_name": records[code]["name"]} for row in envelope.output]
             except Exception as exc:
                 raise RuntimeError(f"KIS news collection failed for stock {code}: {exc}") from exc
             output.extend(envelope.output)

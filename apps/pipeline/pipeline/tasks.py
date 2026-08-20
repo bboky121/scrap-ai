@@ -12,6 +12,8 @@ from celery import Celery
 from celery.schedules import crontab
 from redis.asyncio import Redis
 from sqlalchemy import text
+import httpx
+from zoneinfo import ZoneInfo
 
 from .db import session
 from .discord import notify_error
@@ -35,11 +37,17 @@ def fixture() -> KisEnvelope:
 async def fetch() -> tuple[KisEnvelope, str]:
     redis = Redis.from_url(cfg.valkey_url)
     client = KisClient(redis)
+    lock = redis.lock("kis:ingest:lock", timeout=cfg.kis_ingest_lock_ttl_seconds, blocking_timeout=1)
+    acquired = await lock.acquire()
+    if not acquired:
+        await redis.aclose()
+        raise RuntimeError("KIS ingestion is already running")
     try:
         if not client.configured:
             return fixture(), "DEMO_FIXTURE"
         return await client.top_stock_news(limit=cfg.kis_top_stock_count), "KIS"
     finally:
+        await lock.release()
         await redis.aclose()
 
 
@@ -58,6 +66,10 @@ def ingest(self: Any) -> dict[str, Any]:
             if not is_stock_related(raw):
                 continue
             item = normalize(raw)
+            stock_code = str(item["stock_code"] or "")
+            stock_name = str(raw.get("stock_name") or "").strip()
+            if stock_code and stock_name:
+                db.execute(text('INSERT INTO "Stock" (code,name,"updatedAt") VALUES (:code,:name,now()) ON CONFLICT (code) DO UPDATE SET name=EXCLUDED.name,"updatedAt"=now()'), {"code": stock_code, "name": stock_name})
             basis = json.dumps(raw, ensure_ascii=False, sort_keys=True)
             external_id = str(raw.get("news_srno") or hashlib.sha256(basis.encode()).hexdigest())
             article_id = str(uuid.uuid4())
@@ -119,6 +131,17 @@ def ingest(self: Any) -> dict[str, Any]:
             {"status": status, "fetched": len(envelope.output), "saved": len(saved), "id": run_id},
         )
         db.commit()
+        if saved:
+            try:
+                hour = bucket.astimezone(ZoneInfo("Asia/Seoul")).strftime("%H")
+                httpx.post(
+                    f"{cfg.api_internal_url.rstrip('/')}/devices/internal/briefing",
+                    headers={"x-internal-service-token": cfg.internal_service_token},
+                    json={"briefingId": bid, "hour": hour, "articleCount": len(saved)},
+                    timeout=10,
+                ).raise_for_status()
+            except Exception as exc:
+                notify_error("브리핑 푸시 발송 실패", str(exc), {"briefingId": bid, "taskId": run_id})
         return {"id": run_id, "source": source, "fetched": len(envelope.output), "saved": len(saved)}
     except Exception as exc:
         db.rollback()
