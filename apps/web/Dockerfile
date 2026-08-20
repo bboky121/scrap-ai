@@ -2,8 +2,9 @@ FROM node:22-alpine AS deps
 RUN corepack enable
 WORKDIR /app
 COPY package.json pnpm-workspace.yaml ./
+COPY pnpm-lock.yaml ./
 COPY apps/web/package.json apps/web/package.json
-RUN pnpm install --filter @kis/web... --frozen-lockfile=false
+RUN pnpm install --filter @kis/web... --frozen-lockfile
 FROM deps AS build
 ARG NEXT_PUBLIC_API_URL=http://localhost:4100
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL

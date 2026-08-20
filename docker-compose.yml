@@ -2,12 +2,17 @@ x-app-env: &app-env
   DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/kisbrief}
   VALKEY_URL: ${VALKEY_URL:-redis://valkey:6379/0}
   INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-change-me}
+  API_INTERNAL_URL: ${API_INTERNAL_URL:-http://api:4000}
   DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL:-}
   KIS_APP_KEY: ${KIS_APP_KEY:-}
   KIS_APP_SECRET: ${KIS_APP_SECRET:-}
   KIS_BASE_URL: ${KIS_BASE_URL:-https://openapi.koreainvestment.com:9443}
   KIS_LOG_DIR: ${KIS_LOG_DIR:-/var/log/kis-brief}
   KIS_TOP_STOCK_COUNT: ${KIS_TOP_STOCK_COUNT:-20}
+  KIS_REQUEST_DELAY_SECONDS: ${KIS_REQUEST_DELAY_SECONDS:-0.5}
+  KIS_NEWS_DELAY_SECONDS: ${KIS_NEWS_DELAY_SECONDS:-0.25}
+  KIS_INGEST_LOCK_TTL_SECONDS: ${KIS_INGEST_LOCK_TTL_SECONDS:-900}
+  KIS_REQUESTS_PER_SECOND: ${KIS_REQUESTS_PER_SECOND:-15}
   SESSION_SECRET: ${SESSION_SECRET:-development-session-secret-change-me}
   WEB_URL: ${WEB_URL:-http://localhost:3100}
   API_PUBLIC_URL: ${API_PUBLIC_URL:-http://localhost:4100}
@@ -17,6 +22,10 @@ x-app-env: &app-env
   GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
   KAKAO_CLIENT_ID: ${KAKAO_CLIENT_ID:-}
   KAKAO_CLIENT_SECRET: ${KAKAO_CLIENT_SECRET:-}
+  FCM_PROJECT_ID: ${FCM_PROJECT_ID:-}
+  FCM_CLIENT_EMAIL: ${FCM_CLIENT_EMAIL:-}
+  FCM_PRIVATE_KEY: ${FCM_PRIVATE_KEY:-}
+  MOBILE_DEEP_LINK_SCHEME: ${MOBILE_DEEP_LINK_SCHEME:-kisbrief}
 services:
   postgres:
     image: postgres:16-alpine
@@ -39,7 +48,9 @@ services:
       dockerfile: apps/web/Dockerfile
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4100}
-    environment: *app-env
+    environment:
+      <<: *app-env
+      HOSTNAME: 0.0.0.0
     depends_on: { api: { condition: service_healthy } }
     ports: ['3100:3000']
   python-api: &pipeline
@@ -50,7 +61,7 @@ services:
     ports: ['8100:8000']
   celery-worker:
     <<: *pipeline
-    command: [celery, -A, pipeline.tasks.celery, worker, --loglevel=INFO]
+    command: [celery, -A, pipeline.tasks.celery, worker, --loglevel=INFO, --concurrency=1]
     ports: []
   celery-beat:
     <<: *pipeline

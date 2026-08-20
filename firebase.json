@@ -1,0 +1,17 @@
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json",
+    "database": "(default)",
+    "location": "asia-northeast3"
+  },
+  "auth": {
+    "authorizedDomains": ["localhost"],
+    "providers": {
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "시그널브리프",
+        "supportEmail": "bboky121@gmail.com"
+      }
+    }
+  }
+}

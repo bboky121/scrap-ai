@@ -11,11 +11,23 @@
 
 ## 실행
 
+### Android 개발 환경 초기화
+
+Android Studio로 SDK를 설치한 뒤 프로젝트 루트에서 아래 스크립트를 한 번 실행합니다. 설치 위치를 자동으로 찾아 `apps/mobile/android/local.properties`를 생성합니다. 이 파일은 PC별 경로이므로 Git에 커밋하지 않습니다.
+
+```bash
+./scripts/setup-android-sdk.sh
+# 또는
+pnpm mobile:android:setup
+```
+
+스크립트가 안내하는 `ANDROID_HOME`과 `ANDROID_SDK_ROOT`를 셸 설정 파일(`~/.zshrc` 또는 `~/.bashrc`)에도 추가하면 새 터미널에서도 자동으로 인식됩니다.
+
 ```bash
 cp .env.example .env
 docker compose up -d postgres valkey
-docker compose run --rm api pnpm --dir apps/api prisma:migrate
-docker compose run --rm api pnpm --dir apps/api prisma:seed
+docker compose run --rm --entrypoint sh api -lc 'cd /app/apps/api && ./node_modules/.bin/prisma migrate deploy'
+docker compose run --rm --entrypoint sh api -lc 'cd /app/apps/api && node ../../node_modules/.bin/tsx prisma/seed.ts'
 docker compose up --build
 ```
 

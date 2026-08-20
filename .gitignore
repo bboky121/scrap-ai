@@ -14,3 +14,4 @@ apps/api/src/generated/
 *.pyc
 *.egg-info
 .DS_Store
+apps/mobile/android/local.properties

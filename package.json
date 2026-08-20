@@ -15,7 +15,8 @@
     "format:python:check": "./scripts/ruff format --check apps/pipeline",
     "db:generate": "pnpm --filter @kis/api prisma:generate",
     "db:migrate": "pnpm --filter @kis/api prisma:migrate",
-    "db:seed": "pnpm --filter @kis/api prisma:seed"
+    "db:seed": "pnpm --filter @kis/api prisma:seed",
+    "mobile:android:setup": "./scripts/setup-android-sdk.sh"
   },
   "devDependencies": {
     "prettier": "^3.6.2",
