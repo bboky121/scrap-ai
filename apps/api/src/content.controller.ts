@@ -84,6 +84,9 @@ export class ContentController {
       },
     });
 
+    const allCodes = rows.flatMap((row) => (Array.isArray(row.watchStocks) ? row.watchStocks.filter((value): value is string => typeof value === 'string') : []));
+    const stockRows = allCodes.length ? await this.prisma.stock.findMany({ where: { code: { in: allCodes } } }) : [];
+    const stockNames = new Map(stockRows.map((stock) => [stock.code, stock.name]));
     const items = rows.map((row) => {
       const summaries = row.articles.flatMap(({ article }) => (article.summary ? [article.summary] : []));
       const positiveCount = summaries.filter(({ sentiment }) => sentiment === 'POSITIVE').length;
@@ -91,6 +94,7 @@ export class ContentController {
       const watchStocks = Array.isArray(row.watchStocks)
         ? row.watchStocks.filter((value): value is string => typeof value === 'string')
         : [];
+      const stocks = watchStocks.map((code) => ({ code, name: stockNames.get(code) ?? code }));
       const locked = this.locked(row.bucketAt, paid);
 
       return {
@@ -99,7 +103,7 @@ export class ContentController {
         headline: row.headline,
         marketImpact: locked ? null : row.marketImpact,
         articleCount: row.articles.length,
-        watchStocks: locked ? [] : watchStocks,
+        watchStocks: locked ? [] : stocks,
         sentiment: positiveCount > negativeCount ? '긍정' : negativeCount > positiveCount ? '부정' : '중립',
         positivePercent: summaries.length ? Math.round((positiveCount / summaries.length) * 100) : 0,
         locked,
@@ -117,6 +121,11 @@ export class ContentController {
     });
     if (!row) throw new NotFoundException();
     const locked = this.locked(row.bucketAt, await this.subscribed(req));
+    if (!locked) {
+      const watchStocks = Array.isArray(row.watchStocks) ? row.watchStocks.filter((value): value is string => typeof value === 'string') : [];
+      const stocks = watchStocks.length ? await this.prisma.stock.findMany({ where: { code: { in: watchStocks } } }) : [];
+      return { ...row, watchStocks: watchStocks.map((code) => ({ code, name: stocks.find((stock) => stock.code === code)?.name ?? code })), locked: false };
+    }
     return locked
       ? { id: row.id, bucketAt: row.bucketAt, headline: row.headline, locked: true }
       : { ...row, locked: false };
