@@ -365,8 +365,24 @@ footer {
   font-size: 12px;
 }
 @media (max-width: 800px) {
+  header {
+    height: 64px;
+    gap: 12px;
+    padding: 0 16px;
+  }
+  .brand {
+    font-size: 17px;
+  }
   header nav {
-    display: none;
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .profile {
+    width: 32px;
+    height: 32px;
+    font-size: 10px;
   }
   h1 {
     font-size: 42px;
@@ -375,9 +391,23 @@ footer {
   .price-grid {
     grid-template-columns: 1fr;
   }
-  .panel,
-  .stats {
+  .panel {
+    padding: 28px 22px;
+    gap: 28px;
     flex-direction: column;
+  }
+  .panel h2 {
+    font-size: 28px;
+  }
+  .stats {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    text-align: center;
+  }
+  .stats div {
+    align-items: center;
   }
   .hero {
     padding-top: 65px;
