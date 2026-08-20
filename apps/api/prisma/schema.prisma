@@ -47,6 +47,36 @@ model User {
   createdAt DateTime @default(now())
   subscriptions Subscription[]
   payments PaymentAttempt[]
+  pushDevices PushDevice[]
+}
+
+model Stock {
+  code String @id
+  name String
+  updatedAt DateTime @updatedAt
+}
+
+model PushDevice {
+  id String @id @default(cuid())
+  userId String?
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token String @unique
+  platform String
+  appVersion String?
+  enabled Boolean @default(true)
+  lastSeenAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([userId, enabled])
+}
+
+model BriefingNotification {
+  id String @id @default(cuid())
+  briefingId String @unique
+  articleCount Int
+  status String @default("PENDING")
+  sentAt DateTime?
+  createdAt DateTime @default(now())
 }
 
 model Article {
