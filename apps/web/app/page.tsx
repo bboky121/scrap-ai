@@ -9,7 +9,7 @@ type Briefing = {
   headline: string;
   marketImpact: string | null;
   articleCount: number;
-  watchStocks: string[];
+  watchStocks: Array<{ code: string; name: string }>;
   sentiment: '긍정' | '중립' | '부정';
   positivePercent: number;
   locked: boolean;

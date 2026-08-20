@@ -177,6 +177,85 @@ h1 em {
   grid-template-columns: repeat(3, 1fr);
   gap: 18px;
 }
+.briefing-title {
+  padding-bottom: 42px;
+}
+.briefing-title h1 {
+  max-width: 800px;
+  font-size: 46px;
+}
+.briefing-detail {
+  max-width: 860px;
+  margin: 0 auto;
+  padding-bottom: 40px;
+}
+.briefing-impact {
+  padding: 26px 30px;
+  border-radius: 18px;
+  background: #f2f6ff;
+  border: 1px solid #e3ebfb;
+}
+.briefing-impact p {
+  margin: 12px 0 0;
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1.7;
+}
+.briefing-section {
+  margin-top: 42px;
+}
+.briefing-section h2 {
+  margin: 0 0 18px;
+  font-size: 24px;
+}
+.briefing-section h2 small {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+.briefing-section ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+.briefing-section li {
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  line-height: 1.55;
+  background: #fff;
+}
+.stock-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.stock-tags span {
+  padding: 9px 13px;
+  border-radius: 999px;
+  color: var(--blue);
+  background: #eef4ff;
+  font-size: 13px;
+  font-weight: 700;
+}
+.briefing-detail .news-row {
+  display: block;
+  width: 100%;
+  padding: 20px 0;
+  border-top: 1px solid var(--line);
+}
+.briefing-detail .news-row h3 {
+  margin: 10px 0 6px;
+  font-size: 18px;
+  line-height: 1.45;
+}
+.briefing-detail .news-row p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
 .card,
 .price-card {
   border: 1px solid var(--line);
@@ -411,5 +490,14 @@ footer {
   }
   .hero {
     padding-top: 65px;
+  }
+  .briefing-title h1 {
+    font-size: 32px;
+  }
+  .briefing-impact {
+    padding: 22px;
+  }
+  .briefing-impact p {
+    font-size: 16px;
   }
 }
