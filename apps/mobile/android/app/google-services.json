@@ -1,0 +1,27 @@
+{
+  "project_info": {
+    "project_number": "604340041425",
+    "project_id": "stock-scrap-505507",
+    "storage_bucket": "stock-scrap-505507.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:604340041425:android:08108393ee99e4b94a77f0",
+        "android_client_info": { "package_name": "com.kisbrief.mobile" }
+      },
+      "oauth_client": [
+        { "client_id": "604340041425-kl0hjlilka9pv3p35hkp08klj9rqdobn.apps.googleusercontent.com", "client_type": 3 }
+      ],
+      "api_key": [{ "current_key": "AIzaSyD4jE7StWucBh5bE6w1aCXbnf9zDlchP1k" }],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            { "client_id": "604340041425-kl0hjlilka9pv3p35hkp08klj9rqdobn.apps.googleusercontent.com", "client_type": 3 }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

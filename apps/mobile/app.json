@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "시그널브리프",
+    "slug": "kisbrief",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "kisbrief",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.kisbrief.mobile",
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "infoPlist": { "NSAppTransportSecurity": { "NSAllowsArbitraryLoads": true } }
+    },
+    "android": {
+      "package": "com.kisbrief.mobile",
+      "googleServicesFile": "./google-services.json",
+      "usesCleartextTraffic": true
+    },
+    "plugins": ["@react-native-firebase/app", "@react-native-firebase/messaging"]
+  }
+}

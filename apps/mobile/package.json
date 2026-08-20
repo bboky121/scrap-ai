@@ -1,0 +1,26 @@
+{
+  "name": "@kis/mobile",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "lint": "eslint . --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@react-native-firebase/app": "^23.3.0",
+    "@react-native-firebase/messaging": "^23.3.0",
+    "expo": "^54.0.0",
+    "expo-linking": "^8.0.0",
+    "react": "19.1.0",
+    "react-native": "0.81.4",
+    "react-native-webview": "^13.15.0"
+  },
+  "devDependencies": {
+    "@types/react": "~19.1.0",
+    "typescript": "~5.9.2"
+  }
+}

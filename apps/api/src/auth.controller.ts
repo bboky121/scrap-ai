@@ -1,6 +1,7 @@
 import {
   CanActivate,
   Controller,
+  ExecutionContext,
   Get,
   Injectable,
   Post,
@@ -21,6 +22,15 @@ export class GoogleConfiguredGuard implements CanActivate {
       throw new ServiceUnavailableException('Google 로그인이 설정되지 않았습니다.');
     }
     return true;
+  }
+}
+
+/** Keeps the OAuth client in the session so web and mobile can use different callback destinations. */
+export class GoogleStartGuard extends AuthGuard('google') {
+  canActivate(context: ExecutionContext) {
+    const request = context.switchToHttp().getRequest<Request>();
+    request.session.oauthClient = request.query.client === 'mobile' ? 'mobile' : 'web';
+    return super.canActivate(context);
   }
 }
 
@@ -62,7 +72,7 @@ export class AuthController {
     return { google: Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) };
   }
 
-  @Get('google') @UseGuards(GoogleConfiguredGuard, AuthGuard('google')) google() {}
+  @Get('google') @UseGuards(GoogleConfiguredGuard, GoogleStartGuard) google() {}
   @Get('kakao') @UseGuards(AuthGuard('kakao')) kakao() {}
   @Get('google/callback') @UseGuards(AuthGuard('google')) googleCallback(@Req() req: Request, @Res() res: Response) {
     return this.oauthCallback(req, res);
@@ -83,6 +93,11 @@ export class AuthController {
       },
     });
     req.session.userId = user.id;
-    res.redirect(`${process.env.WEB_URL ?? 'http://localhost:3000'}/account`);
+    const destination =
+      req.session.oauthClient === 'mobile'
+        ? (process.env.MOBILE_DEEP_LINK_SCHEME ?? 'kisbrief') + '://auth/callback'
+        : `${process.env.WEB_URL ?? 'http://localhost:3000'}/account`;
+    delete req.session.oauthClient;
+    res.redirect(destination);
   }
 }

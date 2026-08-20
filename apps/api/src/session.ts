@@ -3,6 +3,7 @@ import { Request } from 'express';
 declare module 'express-session' {
   interface SessionData {
     userId?: string;
+    oauthClient?: 'web' | 'mobile';
   }
 }
 export function userId(req: Request): string {

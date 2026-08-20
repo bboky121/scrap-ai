@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key><string>604340041425-iu9j4sd5sco6bbos2mlsfdfruplqd7fm.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key><string>com.googleusercontent.apps.604340041425-iu9j4sd5sco6bbos2mlsfdfruplqd7fm</string>
+	<key>API_KEY</key><string>AIzaSyAL1N-XLB1m-SGEBpEvWFdvev5nwkXLIQI</string>
+	<key>GCM_SENDER_ID</key><string>604340041425</string>
+	<key>PLIST_VERSION</key><string>1</string>
+	<key>BUNDLE_ID</key><string>com.kisbrief.mobile</string>
+	<key>PROJECT_ID</key><string>stock-scrap-505507</string>
+	<key>STORAGE_BUCKET</key><string>stock-scrap-505507.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key><false/>
+	<key>IS_ANALYTICS_ENABLED</key><false/>
+	<key>IS_APPINVITE_ENABLED</key><true/>
+	<key>IS_GCM_ENABLED</key><true/>
+	<key>IS_SIGNIN_ENABLED</key><true/>
+	<key>GOOGLE_APP_ID</key><string>1:604340041425:ios:8a059ec765fafce94a77f0</string>
+</dict>
+</plist>
