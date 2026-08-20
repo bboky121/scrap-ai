@@ -7,6 +7,16 @@ from pipeline import tasks
 
 
 class FakeRedis:
+    class Lock:
+        async def acquire(self) -> bool:
+            return True
+
+        async def release(self) -> None:
+            pass
+
+    def lock(self, *_args: object, **_kwargs: object) -> Lock:
+        return self.Lock()
+
     async def aclose(self) -> None:
         pass
 

@@ -3,7 +3,9 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import random
 import re
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Literal
@@ -89,12 +91,28 @@ class KisClient:
     def configured(self) -> bool:
         return bool(self.cfg.kis_app_key and self.cfg.kis_app_secret)
 
+    async def _wait_for_rate_limit(self) -> None:
+        """Enforce a shared fixed-window request limit across all workers."""
+        limit = max(1, self.cfg.kis_requests_per_second)
+        while True:
+            window = int(time.time())
+            key = f"kis:rate:{window}"
+            count = int(await self.redis.incr(key))
+            if count == 1:
+                await self.redis.expire(key, 2)
+            if count <= limit:
+                return
+            await self.redis.decr(key)
+            wait = max(0.05, window + 1 - time.time()) + random.uniform(0.01, 0.05)
+            await asyncio.sleep(wait)
+
     async def token(self, force: bool = False) -> str:
         if not force and (cached := await self.redis.get("kis:access_token")):
             return cached.decode() if isinstance(cached, bytes) else str(cached)
         async with self.redis.lock("kis:token:lock", timeout=30, blocking_timeout=10):
             if not force and (cached := await self.redis.get("kis:access_token")):
                 return cached.decode() if isinstance(cached, bytes) else str(cached)
+            await self._wait_for_rate_limit()
             response = await self.client.post(
                 TOKEN_PATH,
                 json={
@@ -120,6 +138,7 @@ class KisClient:
         for attempt in range(4):
             token = await self.token(force=refresh_token)
             refresh_token = False
+            await self._wait_for_rate_limit()
             response = await self.client.get(
                 NEWS_PATH,
                 params=params,
@@ -143,7 +162,7 @@ class KisClient:
                 continue
             if response.status_code == 429 or response.status_code >= 500:
                 if attempt < 3:
-                    await asyncio.sleep(0.3 * (2**attempt))
+                    await asyncio.sleep(max(1.1, 0.5 * (2**attempt)))
                     continue
             response.raise_for_status()
             envelope = KisEnvelope.model_validate(response.json())
@@ -154,29 +173,36 @@ class KisClient:
         raise RuntimeError("KIS request exhausted retries")
 
     async def _ranking(self, path: str, tr_id: str, params: dict[str, str], limit: int) -> list[str]:
-        token = await self.token()
-        response = await self.client.get(
-            path,
-            params=params,
-            headers={
-                "authorization": f"Bearer {token}",
-                "appkey": self.cfg.kis_app_key,
-                "appsecret": self.cfg.kis_app_secret,
-                "tr_id": tr_id,
-                "custtype": "P",
-                "content-type": "application/json; charset=utf-8",
-            },
-        )
-        log_exchange(
-            {"method": "GET", "path": path, "params": params, "headers": dict(response.request.headers)},
-            {"status_code": response.status_code, "headers": dict(response.headers), "body": _safe_body(response.text)},
-        )
-        response.raise_for_status()
-        envelope = KisEnvelope.model_validate(response.json())
-        if envelope.rt_cd != "0":
-            raise RuntimeError(f"KIS {envelope.msg_cd}: {envelope.msg1}")
-        codes = [str(row.get("stck_shrn_iscd") or row.get("iscd1") or "") for row in envelope.output]
-        return [code for code in codes if re.fullmatch(r"\d{6}", code)][:limit]
+        for attempt in range(4):
+            token = await self.token()
+            await self._wait_for_rate_limit()
+            response = await self.client.get(
+                path,
+                params=params,
+                headers={
+                    "authorization": f"Bearer {token}",
+                    "appkey": self.cfg.kis_app_key,
+                    "appsecret": self.cfg.kis_app_secret,
+                    "tr_id": tr_id,
+                    "custtype": "P",
+                    "content-type": "application/json; charset=utf-8",
+                },
+            )
+            log_exchange(
+                {"method": "GET", "path": path, "params": params, "headers": dict(response.request.headers)},
+                {"status_code": response.status_code, "headers": dict(response.headers), "body": _safe_body(response.text)},
+            )
+            if response.status_code == 429 or response.status_code >= 500:
+                if attempt < 3:
+                    await asyncio.sleep(max(1.1, 0.5 * (2**attempt)))
+                    continue
+            response.raise_for_status()
+            envelope = KisEnvelope.model_validate(response.json())
+            if envelope.rt_cd != "0":
+                raise RuntimeError(f"KIS {envelope.msg_cd}: {envelope.msg1}")
+            codes = [str(row.get("mksc_shrn_iscd") or row.get("stck_shrn_iscd") or row.get("iscd1") or "") for row in envelope.output]
+            return [code for code in codes if re.fullmatch(r"\d{6}", code)][:limit]
+        raise RuntimeError(f"KIS ranking request exhausted retries: {path}")
 
     async def top_trading_value_stocks(self, limit: int = 20) -> list[str]:
         """Return KRX stocks ordered by trading value from the volume-rank API."""
@@ -220,13 +246,16 @@ class KisClient:
 
     async def top_stock_news(self, limit: int = 20) -> KisEnvelope:
         trading_codes = await self.top_trading_value_stocks(limit)
+        await asyncio.sleep(self.cfg.kis_request_delay_seconds)
         market_cap_codes = await self.top_market_cap_stocks(limit)
         codes = list(dict.fromkeys([*trading_codes, *market_cap_codes]))
         if not codes:
             raise RuntimeError("KIS ranking APIs returned no stock codes")
 
         output: list[dict[str, Any]] = []
-        for code in codes:
+        for index, code in enumerate(codes):
+            if index:
+                await asyncio.sleep(self.cfg.kis_news_delay_seconds)
             try:
                 envelope = await self.news(NewsQuery(stock_code=code))
             except Exception as exc:

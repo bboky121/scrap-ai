@@ -116,7 +116,7 @@ export default function Home() {
       </section>
       <section className="cards">
         {data?.recent.map((item) => (
-          <Link className="card" href="/news" key={item.id}>
+          <Link className="card" href={`/briefing/${item.id}`} key={item.id}>
             <div className="card-top">
               <span>{time(item.bucketAt)}</span>
               <span className={`mood ${item.sentiment === '긍정' ? 'positive' : ''}`}>{item.sentiment}</span>

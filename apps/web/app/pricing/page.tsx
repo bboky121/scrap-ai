@@ -26,7 +26,16 @@ export default function Pricing() {
   }, [api]);
 
   async function pay(code: string, result = 'success') {
-    await fetch(`${api}/auth/demo`, { method: 'POST', credentials: 'include' });
+    const authResponse = await fetch(`${api}/auth/me`, { credentials: 'include' });
+    if (!authResponse.ok) {
+      setMsg('로그인 상태를 확인하지 못했습니다.');
+      return;
+    }
+    const authData = (await authResponse.json()) as { user: { id: string } | null };
+    if (!authData.user) {
+      window.location.assign('/account?next=/pricing');
+      return;
+    }
     const r = await fetch(`${api}/payments/simulate`, {
       method: 'POST',
       credentials: 'include',
@@ -58,13 +67,13 @@ export default function Pricing() {
         </p>
       </section>
       <section className="price-grid">
-        {plans.map((x) => (
-          <article className={x.best ? 'price-card best' : 'price-card'} key={x.code}>
-            {x.best && <span className="best-label">가장 인기</span>}
-            <small>{x.sub}</small>
-            <h2>{x.name}</h2>
+        {plans.map((plan) => (
+          <article className={plan.best ? 'price-card best' : 'price-card'} key={plan.code}>
+            {plan.best && <span className="best-label">가장 인기</span>}
+            <small>{plan.sub}</small>
+            <h2>{plan.name}</h2>
             <div className="price">
-              <b>₩{x.price}</b>
+              <b>₩{plan.price}</b>
             </div>
             <ul>
               <li>✓ 72시간 이전 뉴스 무제한</li>
@@ -74,7 +83,7 @@ export default function Pricing() {
             <button
               className={subscribed ? 'button subscription-button' : 'button'}
               disabled={subscribed}
-              onClick={() => pay(x.code)}
+              onClick={() => pay(plan.code)}
             >
               {subscribed ? '현재 구독 중입니다.' : '가상 결제로 시작하기'}
             </button>
