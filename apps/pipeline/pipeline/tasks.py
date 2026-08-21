@@ -67,7 +67,7 @@ def ingest(self: Any) -> dict[str, Any]:
                 continue
             item = normalize(raw)
             stock_code = str(item["stock_code"] or "")
-            stock_name = str(raw.get("stock_name") or "").strip()
+            stock_name = str(raw.get("stock_name") or raw.get("kor_isnm1") or "").strip()
             if stock_code and stock_name:
                 db.execute(text('INSERT INTO "Stock" (code,name,"updatedAt") VALUES (:code,:name,now()) ON CONFLICT (code) DO UPDATE SET name=EXCLUDED.name,"updatedAt"=now()'), {"code": stock_code, "name": stock_name})
             basis = json.dumps(raw, ensure_ascii=False, sort_keys=True)
