@@ -9,6 +9,7 @@ FROM deps AS build
 ARG NEXT_PUBLIC_API_URL=http://localhost:4100
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 COPY apps/web apps/web
+RUN pnpm install --filter @kis/web... --frozen-lockfile
 RUN pnpm --filter @kis/web build
 FROM node:24-alpine AS runner
 ENV NODE_ENV=production
