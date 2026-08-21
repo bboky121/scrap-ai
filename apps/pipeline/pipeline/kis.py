@@ -266,7 +266,27 @@ class KisClient:
                 await asyncio.sleep(self.cfg.kis_news_delay_seconds)
             try:
                 envelope = await self.news(NewsQuery(stock_code=code))
-                envelope.output = [{**row, "stock_code": code, "stock_name": records[code]["name"]} for row in envelope.output]
+                normalized_rows = []
+                for row in envelope.output:
+                    # news-title can return rows for several stocks even
+                    # when queried with one code. Match each row independently
+                    # against the ranking response; never copy the queried
+                    # stock's name to the whole response.
+                    row_code = str(row.get("iscd1") or row.get("stock_code") or code)
+                    # Some KIS responses include the instrument name alongside
+                    # its code. Prefer that row-level value; ranking metadata
+                    # remains the fallback for responses without it.
+                    row_name = str(
+                        row.get("kor_isnm1")
+                        or row.get("hts_kor_isnm")
+                        or records.get(row_code, {}).get("name", "")
+                    ).strip()
+                    normalized_rows.append({
+                        **row,
+                        "stock_code": row_code,
+                        "stock_name": row_name,
+                    })
+                envelope.output = normalized_rows
             except Exception as exc:
                 raise RuntimeError(f"KIS news collection failed for stock {code}: {exc}") from exc
             output.extend(envelope.output)
