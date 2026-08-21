@@ -7,13 +7,13 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo
 
+import httpx
 from celery import Celery
 from celery.schedules import crontab
 from redis.asyncio import Redis
 from sqlalchemy import text
-import httpx
-from zoneinfo import ZoneInfo
 
 from .db import session
 from .discord import notify_error

@@ -10,10 +10,10 @@ from pipeline.kis import (
     MARKET_CAP_TR_ID,
     NEWS_PATH,
     NEWS_TR_ID,
-    KisEnvelope,
     VOLUME_RANK_PATH,
     VOLUME_RANK_TR_ID,
     KisClient,
+    KisEnvelope,
     NewsQuery,
     normalize,
 )

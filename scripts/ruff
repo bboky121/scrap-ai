@@ -5,4 +5,8 @@ if [ -x .venv/bin/ruff ]; then
   exec .venv/bin/ruff "$@"
 fi
 
+if [ -x apps/pipeline/.venv/bin/ruff ]; then
+  exec apps/pipeline/.venv/bin/ruff "$@"
+fi
+
 exec ruff "$@"
