@@ -180,6 +180,13 @@ h1 em {
 .briefing-title {
   padding-bottom: 42px;
 }
+.briefing-title > a.eyebrow {
+  display: inline-block;
+  font-size: 20px;
+  letter-spacing: 0;
+  line-height: 1.4;
+  font-weight: 700;
+}
 .briefing-title h1 {
   max-width: 800px;
   font-size: 46px;

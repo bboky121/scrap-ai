@@ -76,6 +76,50 @@ tail -f logs/pipeline/kis-api.log
 
 ## 개발·검증
 
+### 빠른 로컬 개발
+
+개발 중에는 수정 대상 서비스만 Docker에서 중지하고 로컬 개발 서버로 실행하면 코드 변경이 즉시 반영됩니다. PostgreSQL·Valkey 같은 의존 서비스는 Docker로 유지합니다.
+
+웹 UI 작업:
+
+```bash
+docker compose stop web
+pnpm --filter @kis/web exec next dev --hostname 0.0.0.0 --port 3100
+```
+
+API 작업:
+
+```bash
+docker compose stop api
+pnpm --filter @kis/api exec nest start --watch --port 4100
+```
+
+Pipeline 작업:
+
+```bash
+docker compose stop python-api celery-worker celery-beat
+cd apps/pipeline
+source .venv/bin/activate
+uvicorn pipeline.main:app --reload --port 8100
+celery -A pipeline.tasks.celery worker --loglevel=INFO --concurrency=1
+celery -A pipeline.tasks.celery beat --loglevel=INFO
+```
+
+Docker 내부 서비스명(`postgres`, `valkey`, `api`)은 로컬 프로세스에서 `localhost`로 바꿔야 합니다. 호스트 포트는 PostgreSQL `5433`, Valkey `6379`, API `4100`입니다.
+
+```env
+DATABASE_URL=postgresql://postgres:postgres@localhost:5433/kisbrief
+VALKEY_URL=redis://localhost:6379/0
+API_INTERNAL_URL=http://localhost:4100
+NEXT_PUBLIC_API_URL=http://localhost:4100
+```
+
+작업을 마치고 Docker 서비스로 되돌리려면:
+
+```bash
+docker compose up -d --build web api python-api celery-worker celery-beat
+```
+
 ```bash
 pnpm lint
 pnpm test

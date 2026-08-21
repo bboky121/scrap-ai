@@ -8,6 +8,19 @@ docker compose up -d --build web
 pnpm --filter @kis/web dev
 ```
 
+UI를 빠르게 수정할 때는 Docker 웹 컨테이너를 내리고 Hot Reload 서버를 실행합니다.
+
+```bash
+docker compose stop web
+pnpm --filter @kis/web exec next dev --hostname 0.0.0.0 --port 3100
+```
+
+`apps/web/.env.local`에는 로컬 API 주소를 설정합니다.
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:4100
+```
+
 환경변수:
 
 ```env
