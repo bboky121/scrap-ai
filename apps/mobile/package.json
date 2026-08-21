@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@react-native-firebase/app": "^23.3.0",
+    "@react-native-firebase/app": "^26.2.0",
     "@react-native-firebase/messaging": "^23.3.0",
     "expo": "^54.0.0",
     "expo-linking": "^8.0.0",
