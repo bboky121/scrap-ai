@@ -84,7 +84,11 @@ export class ContentController {
       },
     });
 
-    const allCodes = rows.flatMap((row) => (Array.isArray(row.watchStocks) ? row.watchStocks.filter((value): value is string => typeof value === 'string') : []));
+    const allCodes = rows.flatMap((row) =>
+      Array.isArray(row.watchStocks)
+        ? row.watchStocks.filter((value): value is string => typeof value === 'string')
+        : [],
+    );
     const stockRows = allCodes.length ? await this.prisma.stock.findMany({ where: { code: { in: allCodes } } }) : [];
     const stockNames = new Map(stockRows.map((stock) => [stock.code, stock.name]));
     const items = rows.map((row) => {
@@ -122,9 +126,20 @@ export class ContentController {
     if (!row) throw new NotFoundException();
     const locked = this.locked(row.bucketAt, await this.subscribed(req));
     if (!locked) {
-      const watchStocks = Array.isArray(row.watchStocks) ? row.watchStocks.filter((value): value is string => typeof value === 'string') : [];
-      const stocks = watchStocks.length ? await this.prisma.stock.findMany({ where: { code: { in: watchStocks } } }) : [];
-      return { ...row, watchStocks: watchStocks.map((code) => ({ code, name: stocks.find((stock) => stock.code === code)?.name ?? code })), locked: false };
+      const watchStocks = Array.isArray(row.watchStocks)
+        ? row.watchStocks.filter((value): value is string => typeof value === 'string')
+        : [];
+      const stocks = watchStocks.length
+        ? await this.prisma.stock.findMany({ where: { code: { in: watchStocks } } })
+        : [];
+      return {
+        ...row,
+        watchStocks: watchStocks.map((code) => ({
+          code,
+          name: stocks.find((stock) => stock.code === code)?.name ?? code,
+        })),
+        locked: false,
+      };
     }
     return locked
       ? { id: row.id, bucketAt: row.bucketAt, headline: row.headline, locked: true }

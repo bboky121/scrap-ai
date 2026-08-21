@@ -276,16 +276,14 @@ class KisClient:
                     # Some KIS responses include the instrument name alongside
                     # its code. Prefer that row-level value; ranking metadata
                     # remains the fallback for responses without it.
-                    row_name = str(
-                        row.get("kor_isnm1")
-                        or row.get("hts_kor_isnm")
-                        or records.get(row_code, {}).get("name", "")
-                    ).strip()
-                    normalized_rows.append({
-                        **row,
-                        "stock_code": row_code,
-                        "stock_name": row_name,
-                    })
+                    row_name = str(row.get("kor_isnm1") or row.get("hts_kor_isnm") or records.get(row_code, {}).get("name", "")).strip()
+                    normalized_rows.append(
+                        {
+                            **row,
+                            "stock_code": row_code,
+                            "stock_name": row_name,
+                        }
+                    )
                 envelope.output = normalized_rows
             except Exception as exc:
                 raise RuntimeError(f"KIS news collection failed for stock {code}: {exc}") from exc
