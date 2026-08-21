@@ -1,4 +1,4 @@
-FROM node:22-alpine AS build
+FROM node:24-alpine AS build
 RUN corepack enable
 WORKDIR /app
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
@@ -6,7 +6,7 @@ COPY apps/api/package.json apps/api/package.json
 RUN pnpm install --filter @kis/api... --frozen-lockfile
 COPY apps/api apps/api
 RUN pnpm --filter @kis/api prisma:generate && pnpm --filter @kis/api build
-FROM node:22-alpine
+FROM node:24-alpine
 RUN addgroup -S app && adduser -S app -G app
 WORKDIR /app
 COPY --from=build --chown=app:app /app/node_modules ./node_modules

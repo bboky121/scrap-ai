@@ -1,4 +1,4 @@
-FROM node:22-alpine AS deps
+FROM node:24-alpine AS deps
 RUN corepack enable
 WORKDIR /app
 COPY package.json pnpm-workspace.yaml ./
@@ -10,7 +10,7 @@ ARG NEXT_PUBLIC_API_URL=http://localhost:4100
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 COPY apps/web apps/web
 RUN pnpm --filter @kis/web build
-FROM node:22-alpine AS runner
+FROM node:24-alpine AS runner
 ENV NODE_ENV=production
 RUN addgroup -S app && adduser -S app -G app
 WORKDIR /app
