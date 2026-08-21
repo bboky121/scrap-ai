@@ -136,8 +136,8 @@ importers:
         specifier: ^26.2.0
         version: 26.2.0(expo@54.0.37(@babel/core@7.29.7)(react-native-webview@14.0.1(react-native@0.81.4(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(typescript@5.9.3))(react-native@0.81.4(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       '@react-native-firebase/messaging':
-        specifier: ^23.3.0
-        version: 23.8.8(@react-native-firebase/app@26.2.0(expo@54.0.37(@babel/core@7.29.7)(react-native-webview@14.0.1(react-native@0.81.4(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(typescript@5.9.3))(react-native@0.81.4(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(expo@54.0.37(@babel/core@7.29.7)(react-native-webview@14.0.1(react-native@0.81.4(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(typescript@5.9.3))
+        specifier: ^26.2.0
+        version: 26.2.0(@react-native-firebase/app@26.2.0(expo@54.0.37(@babel/core@7.29.7)(react-native-webview@14.0.1(react-native@0.81.4(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(typescript@5.9.3))(react-native@0.81.4(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(expo@54.0.37(@babel/core@7.29.7)(react-native-webview@14.0.1(react-native@0.81.4(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(typescript@5.9.3))
       expo:
         specifier: ^54.0.0
         version: 54.0.37(@babel/core@7.29.7)(react-native-webview@14.0.1(react-native@0.81.4(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(typescript@5.9.3)
@@ -2124,10 +2124,10 @@ packages:
       expo:
         optional: true
 
-  '@react-native-firebase/messaging@23.8.8':
-    resolution: {integrity: sha512-7Po3/0M9SjYftWFZDueNqvbYDgycE/p7rYrcPDBjxWXsVPO98woLPIFRDuYIJDlTVFyYFjpCTF8kDIGBWPTFzQ==}
+  '@react-native-firebase/messaging@26.2.0':
+    resolution: {integrity: sha512-/yy/l9OVXYlvyKtl5Hm26BcA/dcVDZLNlv9DhaCaWSOMTbWc/u1NRkP/8WOuRJ1B8n4/lYahPGppuhOaJhL7Zg==}
     peerDependencies:
-      '@react-native-firebase/app': 23.8.8
+      '@react-native-firebase/app': 26.2.0
       expo: '>=47.0.0'
     peerDependenciesMeta:
       expo:
@@ -8633,7 +8633,7 @@ snapshots:
     transitivePeerDependencies:
       - '@react-native-async-storage/async-storage'
 
-  '@react-native-firebase/messaging@23.8.8(@react-native-firebase/app@26.2.0(expo@54.0.37(@babel/core@7.29.7)(react-native-webview@14.0.1(react-native@0.81.4(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(typescript@5.9.3))(react-native@0.81.4(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(expo@54.0.37(@babel/core@7.29.7)(react-native-webview@14.0.1(react-native@0.81.4(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(typescript@5.9.3))':
+  '@react-native-firebase/messaging@26.2.0(@react-native-firebase/app@26.2.0(expo@54.0.37(@babel/core@7.29.7)(react-native-webview@14.0.1(react-native@0.81.4(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(typescript@5.9.3))(react-native@0.81.4(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(expo@54.0.37(@babel/core@7.29.7)(react-native-webview@14.0.1(react-native@0.81.4(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(typescript@5.9.3))':
     dependencies:
       '@react-native-firebase/app': 26.2.0(expo@54.0.37(@babel/core@7.29.7)(react-native-webview@14.0.1(react-native@0.81.4(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(typescript@5.9.3))(react-native@0.81.4(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
     optionalDependencies:
