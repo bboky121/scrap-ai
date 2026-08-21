@@ -252,13 +252,9 @@ class KisClient:
         )
 
     async def top_stock_news(self, limit: int = 20) -> KisEnvelope:
-        trading_records = await self._ranking_details(VOLUME_RANK_PATH, VOLUME_RANK_TR_ID, {
-            "FID_COND_MRKT_DIV_CODE": "J", "FID_COND_SCR_DIV_CODE": "20171", "FID_INPUT_ISCD": "0000", "FID_DIV_CLS_CODE": "0", "FID_BLNG_CLS_CODE": "3", "FID_TRGT_CLS_CODE": "111111111", "FID_TRGT_EXLS_CLS_CODE": "0000000000", "FID_RANK_SORT_CLS_CODE": "0", "FID_INPUT_PRICE_1": "", "FID_INPUT_PRICE_2": "", "FID_VOL_CNT": ""
-        }, limit)
+        trading_records = await self._ranking_details(VOLUME_RANK_PATH, VOLUME_RANK_TR_ID, {"FID_COND_MRKT_DIV_CODE": "J", "FID_COND_SCR_DIV_CODE": "20171", "FID_INPUT_ISCD": "0000", "FID_DIV_CLS_CODE": "0", "FID_BLNG_CLS_CODE": "3", "FID_TRGT_CLS_CODE": "111111111", "FID_TRGT_EXLS_CLS_CODE": "0000000000", "FID_RANK_SORT_CLS_CODE": "0", "FID_INPUT_PRICE_1": "", "FID_INPUT_PRICE_2": "", "FID_VOL_CNT": ""}, limit)
         await asyncio.sleep(self.cfg.kis_request_delay_seconds)
-        market_records = await self._ranking_details(MARKET_CAP_PATH, MARKET_CAP_TR_ID, {
-            "FID_COND_MRKT_DIV_CODE": "J", "FID_COND_SCR_DIV_CODE": "20174", "FID_INPUT_ISCD": "0000", "FID_DIV_CLS_CODE": "0", "FID_INPUT_PRICE_1": "", "FID_INPUT_PRICE_2": "", "FID_VOL_CNT": "", "FID_TRGT_CLS_CODE": "0", "FID_TRGT_EXLS_CLS_CODE": "0"
-        }, limit)
+        market_records = await self._ranking_details(MARKET_CAP_PATH, MARKET_CAP_TR_ID, {"FID_COND_MRKT_DIV_CODE": "J", "FID_COND_SCR_DIV_CODE": "20174", "FID_INPUT_ISCD": "0000", "FID_DIV_CLS_CODE": "0", "FID_INPUT_PRICE_1": "", "FID_INPUT_PRICE_2": "", "FID_VOL_CNT": "", "FID_TRGT_CLS_CODE": "0", "FID_TRGT_EXLS_CLS_CODE": "0"}, limit)
         records = {item["code"]: item for item in [*trading_records, *market_records]}
         codes = list(records)
         if not codes:
