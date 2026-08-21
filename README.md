@@ -19,23 +19,23 @@
 
 ### 홈
 
-<img src="apps/web/public/readme/home.png" alt="시그널브리프 홈" width="420">
+<img src="apps/web/public/readme/home.png" alt="시그널브리프 홈" width="500">
 
 ### 국내 증권 뉴스
 
-<img src="apps/web/public/readme/news.png" alt="국내 증권 뉴스 목록" width="420">
+<img src="apps/web/public/readme/news.png" alt="국내 증권 뉴스 목록" width="500">
 
 ### 시간별 브리핑 상세
 
-<img src="apps/web/public/readme/briefing.png" alt="시간별 브리핑 상세" width="420">
+<img src="apps/web/public/readme/briefing.png" alt="시간별 브리핑 상세" width="500">
 
 ### 멤버십 요금제
 
-<img src="apps/web/public/readme/pricing.png" alt="멤버십 요금제" width="420">
+<img src="apps/web/public/readme/pricing.png" alt="멤버십 요금제" width="500">
 
 ### 로그인
 
-<img src="apps/web/public/readme/login.png" alt="로그인" width="420">
+<img src="apps/web/public/readme/login.png" alt="로그인" width="500">
 
 ## 아키텍처
 
