@@ -15,12 +15,12 @@
     "@react-native-firebase/messaging": "^26.2.0",
     "expo": "^54.0.0",
     "expo-linking": "^8.0.0",
-    "react": "19.1.0",
+    "react": "19.2.8",
     "react-native": "0.87.0",
     "react-native-webview": "^14.0.1"
   },
   "devDependencies": {
-    "@types/react": "~19.1.0",
+    "@types/react": "~19.2.18",
     "@typescript-eslint/eslint-plugin": "^8.67.0",
     "@typescript-eslint/parser": "^8.67.0",
     "typescript": "~5.9.2"
