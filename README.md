@@ -13,6 +13,30 @@
 - FCM 시간별 브리핑 푸시 및 Discord 장애 알림
 - Next.js 웹과 Expo React Native WebView 앱
 
+## 화면 미리보기
+
+실행 중인 로컬 서비스에서 캡처한 주요 화면입니다.
+
+### 홈
+
+<img src="apps/web/public/readme/home.png" alt="시그널브리프 홈" width="420">
+
+### 국내 증권 뉴스
+
+<img src="apps/web/public/readme/news.png" alt="국내 증권 뉴스 목록" width="420">
+
+### 시간별 브리핑 상세
+
+<img src="apps/web/public/readme/briefing.png" alt="시간별 브리핑 상세" width="420">
+
+### 멤버십 요금제
+
+<img src="apps/web/public/readme/pricing.png" alt="멤버십 요금제" width="420">
+
+### 로그인
+
+<img src="apps/web/public/readme/login.png" alt="로그인" width="420">
+
 ## 아키텍처
 
 ```text
