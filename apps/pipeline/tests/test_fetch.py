@@ -43,3 +43,11 @@ def test_unconfigured_kis_uses_demo_fixture(monkeypatch: pytest.MonkeyPatch) -> 
 
     assert asyncio.run(tasks.fetch()) == (demo, "DEMO_FIXTURE")
     kis.top_stock_news.assert_not_awaited()
+
+
+def test_fixture_contains_contract_fields() -> None:
+    envelope = tasks.fixture()
+    assert envelope.output
+    for row in envelope.output:
+        assert row.get("hts_pbnt_titl_cntt") or row.get("title")
+        assert row.get("data_dt") or row.get("date")

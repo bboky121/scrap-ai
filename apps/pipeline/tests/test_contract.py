@@ -10,6 +10,7 @@ from pipeline.kis import (
     MARKET_CAP_TR_ID,
     NEWS_PATH,
     NEWS_TR_ID,
+    KisEnvelope,
     VOLUME_RANK_PATH,
     VOLUME_RANK_TR_ID,
     KisClient,
@@ -118,11 +119,55 @@ def test_top_stock_news_deduplicates_rankings_and_aggregates_per_stock(monkeypat
 
 def test_top_stock_news_preserves_failing_stock_context(monkeypatch: pytest.MonkeyPatch) -> None:
     client = client_for(lambda _: httpx.Response(500), monkeypatch)
-    client.top_trading_value_stocks = AsyncMock(return_value=["005930"])  # type: ignore[method-assign]
-    client.top_market_cap_stocks = AsyncMock(return_value=[])  # type: ignore[method-assign]
+    client._ranking_details = AsyncMock(return_value=[{"code": "005930", "name": "삼성전자"}])  # type: ignore[method-assign]
     client.news = AsyncMock(side_effect=RuntimeError("KIS EGW00123: upstream unavailable"))  # type: ignore[method-assign]
 
     with pytest.raises(RuntimeError, match=r"stock 005930: KIS EGW00123: upstream unavailable") as caught:
         asyncio.run(client.top_stock_news())
     assert isinstance(caught.value.__cause__, RuntimeError)
+    asyncio.run(client.client.aclose())
+
+
+def test_top_stock_news_uses_row_level_code_and_name(monkeypatch: pytest.MonkeyPatch) -> None:
+    client = client_for(lambda _: httpx.Response(200), monkeypatch)
+    client._ranking_details = AsyncMock(return_value=[{"code": "058730", "name": "다스코"}])  # type: ignore[method-assign]
+    client.news = AsyncMock(  # type: ignore[method-assign]
+        return_value=KisEnvelope(rt_cd="0", output=[{"iscd1": "058730", "kor_isnm1": "다스코"}])
+    )
+
+    envelope = asyncio.run(client.top_stock_news())
+
+    assert envelope.output == [
+        {
+            "iscd1": "058730",
+            "kor_isnm1": "다스코",
+            "stock_code": "058730",
+            "stock_name": "다스코",
+        }
+    ]
+    asyncio.run(client.client.aclose())
+
+
+def test_top_stock_news_maps_multiple_rows_independently(monkeypatch: pytest.MonkeyPatch) -> None:
+    client = client_for(lambda _: httpx.Response(200), monkeypatch)
+    client._ranking_details = AsyncMock(  # type: ignore[method-assign]
+        side_effect=[
+            [{"code": "058730", "name": "다스코"}],
+            [{"code": "005930", "name": "삼성전자"}],
+        ]
+    )
+    client.news = AsyncMock(  # type: ignore[method-assign]
+        return_value=KisEnvelope(
+            rt_cd="0",
+            output=[
+                {"iscd1": "058730", "kor_isnm1": "다스코"},
+                {"iscd1": "005930", "kor_isnm1": "삼성전자"},
+            ],
+        )
+    )
+    envelope = asyncio.run(client.top_stock_news())
+    assert {(row["stock_code"], row["stock_name"]) for row in envelope.output} == {
+        ("058730", "다스코"),
+        ("005930", "삼성전자"),
+    }
     asyncio.run(client.client.aclose())
