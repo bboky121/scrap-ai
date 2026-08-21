@@ -160,7 +160,7 @@ h1 em {
 }
 .section-head {
   display: flex;
-  align-items: end;
+  align-items: flex-end;
   justify-content: space-between;
   margin: 70px 0 22px;
 }
