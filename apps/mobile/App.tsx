@@ -1,7 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, BackHandler, Linking, Platform, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { WebView } from 'react-native-webview';
-import messaging from '@react-native-firebase/messaging';
+import {
+  getInitialNotification,
+  getMessaging,
+  getToken,
+  onMessage,
+  onNotificationOpenedApp,
+  requestPermission,
+} from '@react-native-firebase/messaging';
 
 const webUrl = process.env.EXPO_PUBLIC_WEB_URL ?? 'http://localhost:3100';
 const apiUrl = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:4100';
@@ -26,19 +33,20 @@ export default function App() {
     });
     (async () => {
       try {
-        await messaging().requestPermission();
-        const token = await messaging().getToken();
+        const messaging = getMessaging();
+        await requestPermission(messaging);
+        const token = await getToken(messaging);
         await fetch(`${apiUrl}/devices/push-token`, {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({ token, platform: Platform.OS, appVersion: '0.1.0' }),
         });
-        unsubscribe = messaging().onMessage(async () => undefined);
-        messaging().onNotificationOpenedApp((message) => {
+        unsubscribe = onMessage(messaging, async () => undefined);
+        onNotificationOpenedApp(messaging, (message) => {
           const id = message.data?.briefingId;
           if (id) ref.current?.injectJavaScript(`window.location.href='/briefing/${id}'; true;`);
         });
-        const initial = await messaging().getInitialNotification();
+        const initial = await getInitialNotification(messaging);
         const id = initial?.data?.briefingId;
         if (id) ref.current?.injectJavaScript(`window.location.href='/briefing/${id}'; true;`);
       } catch {
