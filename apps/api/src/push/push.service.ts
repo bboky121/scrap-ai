@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { DiscordService } from '../common/discord.service';
+import { briefingNotification } from './domain/briefing-notification';
+import { FcmService } from './fcm.service';
 
 @Injectable()
 export class PushService {
@@ -8,6 +10,7 @@ export class PushService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly discord: DiscordService,
+    private readonly fcm: FcmService,
   ) {}
 
   async register(userId: string | undefined, token: string, platform: string, appVersion?: string) {
@@ -38,33 +41,20 @@ export class PushService {
       where: { enabled: true },
       select: { id: true, token: true },
     });
-    const title = '시그널브리프';
-    const body = `${hour}시 브리핑 ${articleCount}건입니다.`;
-    if (!process.env.FCM_PROJECT_ID || !process.env.FCM_CLIENT_EMAIL || !process.env.FCM_PRIVATE_KEY) {
+    const message = briefingNotification(hour, articleCount);
+    if (!this.fcm.isConfigured()) {
       this.logger.log(`FCM is not configured; skipped ${devices.length} devices for ${briefingId}`);
       await this.prisma.briefingNotification.update({ where: { briefingId }, data: { status: 'SKIPPED' } });
       return { skipped: true, reason: 'FCM_NOT_CONFIGURED' };
     }
     try {
-      const [{ cert, getApps, initializeApp }, { getMessaging }] = await Promise.all([
-        import('firebase-admin/app'),
-        import('firebase-admin/messaging'),
-      ]);
-      if (!getApps().length) {
-        initializeApp({
-          credential: cert({
-            projectId: process.env.FCM_PROJECT_ID,
-            clientEmail: process.env.FCM_CLIENT_EMAIL,
-            privateKey: process.env.FCM_PRIVATE_KEY.replace(/\\n/g, '\n'),
-          }),
-        });
-      }
+      await this.fcm.initialize();
       for (const device of devices) {
         try {
-          await getMessaging().send({
+          await this.fcm.sendBriefing({
             token: device.token,
-            notification: { title, body },
-            data: { type: 'briefing', briefingId },
+            ...message,
+            briefingId,
           });
         } catch (error) {
           await this.prisma.pushDevice
