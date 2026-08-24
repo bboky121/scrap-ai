@@ -1,0 +1,5 @@
+# Vulnerabilities currently inherited from the npm bundle in node:24-alpine.
+# Re-evaluate these entries when the base image ships fixed npm dependencies.
+CVE-2026-59874
+CVE-2026-73566
+CVE-2026-12151
