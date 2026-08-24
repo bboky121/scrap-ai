@@ -1,9 +1,9 @@
-import { AuthController, GoogleConfiguredGuard } from './auth.controller';
-import { BillingController } from './billing.controller';
-import { ContentController } from './content.controller';
-import { HealthController } from './health.controller';
-import { PushController } from './push.controller';
-import { userId } from './session';
+import { AuthController, GoogleConfiguredGuard } from './auth/auth.controller';
+import { BillingController } from './billing/billing.controller';
+import { ContentController } from './content/content.controller';
+import { HealthController } from './health/health.controller';
+import { PushController } from './push/push.controller';
+import { userId } from './common/session';
 
 const request = (user?: string): any => ({ session: { userId: user } });
 

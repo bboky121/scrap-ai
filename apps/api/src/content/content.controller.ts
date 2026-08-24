@@ -1,10 +1,15 @@
 import { Controller, Get, NotFoundException, Param, Query, Req } from '@nestjs/common';
 import { Request } from 'express';
-import { PrismaService } from './prisma.service';
+import { PrismaService } from '../common/prisma.service';
+import { ContentService } from './content.service';
+import { ArticleQueryDto } from './dto/article-query.dto';
 
 @Controller()
 export class ContentController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly content = new ContentService(),
+  ) {}
   private async subscribed(req: Request) {
     if (!req.session.userId) return false;
     return !!(await this.prisma.subscription.findFirst({
@@ -12,7 +17,7 @@ export class ContentController {
     }));
   }
   private locked(publishedAt: Date, paid: boolean) {
-    return isContentLocked(publishedAt, paid);
+    return this.content.isLocked(publishedAt, paid);
   }
   private articleView(article: any, paid: boolean) {
     const locked = this.locked(article.publishedAt, paid);
@@ -26,7 +31,9 @@ export class ContentController {
   }
 
   @Get('articles')
-  async articles(@Req() req: Request, @Query('page') page = '1', @Query('kind') kind?: string) {
+  async articles(@Req() req: Request, @Query() query: ArticleQueryDto = {}) {
+    const page = query.page ?? '1';
+    const kind = query.kind;
     const paid = await this.subscribed(req);
     const take = 20;
     const current = Math.max(1, Number(page) || 1);
@@ -145,8 +152,4 @@ export class ContentController {
       ? { id: row.id, bucketAt: row.bucketAt, headline: row.headline, locked: true }
       : { ...row, locked: false };
   }
-}
-
-export function isContentLocked(publishedAt: Date, paid: boolean, now = new Date()): boolean {
-  return !paid && now.getTime() - publishedAt.getTime() >= 72 * 3600_000;
 }

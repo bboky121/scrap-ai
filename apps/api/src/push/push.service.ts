@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from './prisma.service';
-import { DiscordService } from './discord.service';
+import { PrismaService } from '../common/prisma.service';
+import { DiscordService } from '../common/discord.service';
 
 @Injectable()
 export class PushService {

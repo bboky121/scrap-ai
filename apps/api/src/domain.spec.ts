@@ -1,6 +1,6 @@
-import { planEndsAt } from './billing.controller';
-import { isContentLocked } from './content.controller';
-import { GoogleConfiguredGuard } from './auth.controller';
+import { planEndsAt } from './billing/billing.service';
+import { isContentLocked } from './content/content.service';
+import { GoogleConfiguredGuard } from './auth/auth.controller';
 
 describe('content entitlement', () => {
   const now = new Date('2026-08-14T00:00:00.000Z');

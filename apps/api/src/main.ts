@@ -5,7 +5,7 @@ import session = require('express-session');
 import { RedisStore } from 'connect-redis';
 import { createClient } from 'redis';
 import { AppModule } from './app.module';
-import { DiscordService } from './discord.service';
+import { DiscordService } from './common/discord.service';
 import { HttpExceptionFilter } from './http-exception.filter';
 
 async function bootstrap() {
