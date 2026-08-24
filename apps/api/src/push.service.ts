@@ -46,10 +46,13 @@ export class PushService {
       return { skipped: true, reason: 'FCM_NOT_CONFIGURED' };
     }
     try {
-      const { default: admin } = await import('firebase-admin');
-      if (!admin.apps.length) {
-        admin.initializeApp({
-          credential: admin.credential.cert({
+      const [{ cert, getApps, initializeApp }, { getMessaging }] = await Promise.all([
+        import('firebase-admin/app'),
+        import('firebase-admin/messaging'),
+      ]);
+      if (!getApps().length) {
+        initializeApp({
+          credential: cert({
             projectId: process.env.FCM_PROJECT_ID,
             clientEmail: process.env.FCM_CLIENT_EMAIL,
             privateKey: process.env.FCM_PRIVATE_KEY.replace(/\\n/g, '\n'),
@@ -58,9 +61,11 @@ export class PushService {
       }
       for (const device of devices) {
         try {
-          await admin
-            .messaging()
-            .send({ token: device.token, notification: { title, body }, data: { type: 'briefing', briefingId } });
+          await getMessaging().send({
+            token: device.token,
+            notification: { title, body },
+            data: { type: 'briefing', briefingId },
+          });
         } catch (error) {
           await this.prisma.pushDevice
             .update({ where: { id: device.id }, data: { enabled: false } })
