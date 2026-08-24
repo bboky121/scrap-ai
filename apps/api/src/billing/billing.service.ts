@@ -1,34 +1,23 @@
 import { Injectable } from '@nestjs/common';
-import { PlanCode } from '../generated/prisma/client';
-import { Request } from 'express';
 import { PrismaService } from '../common/prisma.service';
-import { userId } from '../common/session';
 import { SimulatePaymentDto } from './dto/simulate-payment.dto';
 import { AutoRenewDto } from './dto/auto-renew.dto';
+import { planEndsAt } from './domain/subscription-period';
 
 @Injectable()
 export class BillingService {
-  constructor(private readonly prisma?: PrismaService) {}
-
-  planEndsAt(code: PlanCode, from = new Date()) {
-    const end = new Date(from);
-    if (code === 'WEEK') end.setUTCDate(end.getUTCDate() + 7);
-    if (code === 'MONTH') end.setUTCMonth(end.getUTCMonth() + 1);
-    if (code === 'YEAR') end.setUTCFullYear(end.getUTCFullYear() + 1);
-    return end;
-  }
+  constructor(private readonly prisma: PrismaService) {}
 
   plans() {
-    return this.prisma!.plan.findMany({ orderBy: { price: 'asc' } });
+    return this.prisma.plan.findMany({ orderBy: { price: 'asc' } });
   }
 
-  async pay(req: Request, body: SimulatePaymentDto) {
-    const uid = userId(req);
-    const plan = await this.prisma!.plan.findUniqueOrThrow({ where: { code: body.planCode } });
+  async pay(userId: string, body: SimulatePaymentDto) {
+    const plan = await this.prisma.plan.findUniqueOrThrow({ where: { code: body.planCode } });
     const success = body.result === 'success';
-    const payment = await this.prisma!.paymentAttempt.create({
+    const payment = await this.prisma.paymentAttempt.create({
       data: {
-        userId: uid,
+        userId,
         planCode: plan.code,
         amount: plan.price,
         status: success ? 'SUCCEEDED' : 'FAILED',
@@ -37,18 +26,18 @@ export class BillingService {
       },
     });
     if (!success) return { payment, subscription: null };
-    await this.prisma!.subscription.updateMany({
-      where: { userId: uid, status: 'ACTIVE' },
+    await this.prisma.subscription.updateMany({
+      where: { userId, status: 'ACTIVE' },
       data: { status: 'EXPIRED', autoRenew: false },
     });
     const start = new Date();
-    const subscription = await this.prisma!.subscription.create({
+    const subscription = await this.prisma.subscription.create({
       data: {
-        userId: uid,
+        userId,
         planCode: plan.code,
         status: 'ACTIVE',
         startsAt: start,
-        endsAt: this.planEndsAt(plan.code, start),
+        endsAt: planEndsAt(plan.code, start),
         autoRenew: !!body.autoRenew,
         events: { create: { type: 'ACTIVATED', detail: { paymentId: payment.id } } },
       },
@@ -56,21 +45,21 @@ export class BillingService {
     return { payment, subscription };
   }
 
-  async mine(req: Request) {
+  async mine(userId: string) {
     return {
-      subscription: await this.prisma!.subscription.findFirst({
-        where: { userId: userId(req), status: 'ACTIVE', endsAt: { gt: new Date() } },
+      subscription: await this.prisma.subscription.findFirst({
+        where: { userId, status: 'ACTIVE', endsAt: { gt: new Date() } },
         include: { plan: true },
         orderBy: { endsAt: 'desc' },
       }),
     };
   }
 
-  async renew(req: Request, body: AutoRenewDto) {
-    const sub = await this.prisma!.subscription.findFirstOrThrow({
-      where: { userId: userId(req), status: 'ACTIVE', endsAt: { gt: new Date() } },
+  async renew(userId: string, body: AutoRenewDto) {
+    const sub = await this.prisma.subscription.findFirstOrThrow({
+      where: { userId, status: 'ACTIVE', endsAt: { gt: new Date() } },
     });
-    return this.prisma!.subscription.update({
+    return this.prisma.subscription.update({
       where: { id: sub.id },
       data: {
         autoRenew: !!body.autoRenew,
@@ -79,11 +68,11 @@ export class BillingService {
     });
   }
 
-  async cancel(req: Request) {
-    const sub = await this.prisma!.subscription.findFirstOrThrow({
-      where: { userId: userId(req), status: 'ACTIVE', endsAt: { gt: new Date() } },
+  async cancel(userId: string) {
+    const sub = await this.prisma.subscription.findFirstOrThrow({
+      where: { userId, status: 'ACTIVE', endsAt: { gt: new Date() } },
     });
-    return this.prisma!.subscription.update({
+    return this.prisma.subscription.update({
       where: { id: sub.id },
       data: {
         autoRenew: false,
@@ -92,8 +81,4 @@ export class BillingService {
       },
     });
   }
-}
-
-export function planEndsAt(code: PlanCode, from = new Date()) {
-  return new BillingService().planEndsAt(code, from);
 }

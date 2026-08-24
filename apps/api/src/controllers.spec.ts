@@ -1,5 +1,7 @@
 import { AuthController, GoogleConfiguredGuard } from './auth/auth.controller';
+import { AuthService } from './auth/auth.service';
 import { BillingController } from './billing/billing.controller';
+import { BillingService } from './billing/billing.service';
 import { ContentController } from './content/content.controller';
 import { ContentService } from './content/content.service';
 import { HealthController } from './health/health.controller';
@@ -39,7 +41,7 @@ describe('API controllers', () => {
         findUnique: jest.fn().mockResolvedValue({ ...user, provider: null }),
       },
     };
-    const controller = new AuthController(prisma);
+    const controller = new AuthController(new AuthService(prisma));
     const req: any = { session: { destroy: (cb: Function) => cb(), userId: undefined } };
     process.env.DEMO_AUTH_ENABLED = 'true';
     expect(await controller.demo(req)).toEqual({ user });
@@ -64,7 +66,7 @@ describe('API controllers', () => {
         update: jest.fn().mockResolvedValue({ id: 's1', autoRenew: false }),
       },
     };
-    const controller = new BillingController(prisma);
+    const controller = new BillingController(new BillingService(prisma));
     const req = request('u1');
     expect(await controller.plans()).toEqual([plan]);
     expect(
@@ -129,7 +131,7 @@ describe('API controllers', () => {
 
   it('redirects OAuth callbacks for web and mobile clients', async () => {
     const prisma: any = { user: { upsert: jest.fn().mockResolvedValue({ id: 'u1' }) } };
-    const controller = new AuthController(prisma) as any;
+    const controller = new AuthController(new AuthService(prisma)) as any;
     const response = { redirect: jest.fn() };
     process.env.WEB_URL = 'http://localhost:3100';
     process.env.MOBILE_DEEP_LINK_SCHEME = 'kisbrief';

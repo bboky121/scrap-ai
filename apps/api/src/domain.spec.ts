@@ -1,6 +1,7 @@
-import { planEndsAt } from './billing/billing.service';
+import { planEndsAt } from './billing/domain/subscription-period';
 import { isContentLocked } from './content/domain/content-access';
 import { GoogleConfiguredGuard } from './auth/auth.controller';
+import { oauthRedirectDestination } from './auth/domain/oauth-redirect';
 
 describe('content entitlement', () => {
   const now = new Date('2026-08-14T00:00:00.000Z');
@@ -41,5 +42,18 @@ describe('Google login configuration', () => {
     process.env.GOOGLE_CLIENT_ID = 'client-id';
     process.env.GOOGLE_CLIENT_SECRET = 'client-secret';
     expect(new GoogleConfiguredGuard().canActivate()).toBe(true);
+  });
+});
+
+describe('OAuth callback destination', () => {
+  it('uses the configured web and mobile destinations', () => {
+    process.env.WEB_URL = 'https://web.example.com';
+    process.env.MOBILE_DEEP_LINK_SCHEME = 'example';
+
+    expect(oauthRedirectDestination('web')).toBe('https://web.example.com/account');
+    expect(oauthRedirectDestination('mobile')).toBe('example://auth/callback');
+
+    delete process.env.WEB_URL;
+    delete process.env.MOBILE_DEEP_LINK_SCHEME;
   });
 });
