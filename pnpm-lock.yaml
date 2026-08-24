@@ -127,8 +127,8 @@ importers:
         specifier: ^4.19.2
         version: 4.23.12
       typescript:
-        specifier: ^7.0.2
-        version: 7.0.2
+        specifier: 5.9.3
+        version: 5.9.3
 
   apps/mobile:
     dependencies:
@@ -164,8 +164,8 @@ importers:
         specifier: ^8.67.0
         version: 8.67.0(eslint@10.8.1(jiti@2.7.0))(typescript@7.0.2)
       typescript:
-        specifier: ~7.0.2
-        version: 7.0.2
+        specifier: 5.9.3
+        version: 5.9.3
 
   apps/web:
     dependencies:
@@ -189,8 +189,8 @@ importers:
         specifier: ^19.0.3
         version: 19.2.4(@types/react@19.2.18)
       typescript:
-        specifier: ^7.0.2
-        version: 7.0.2
+        specifier: 5.9.3
+        version: 5.9.3
 
 packages:
 
