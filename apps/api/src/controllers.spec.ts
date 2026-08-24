@@ -1,6 +1,7 @@
 import { AuthController, GoogleConfiguredGuard } from './auth/auth.controller';
 import { BillingController } from './billing/billing.controller';
 import { ContentController } from './content/content.controller';
+import { ContentService } from './content/content.service';
 import { HealthController } from './health/health.controller';
 import { PushController } from './push/push.controller';
 import { userId } from './common/session';
@@ -8,6 +9,21 @@ import { userId } from './common/session';
 const request = (user?: string): any => ({ session: { userId: user } });
 
 describe('API controllers', () => {
+  it('delegates content requests to ContentService', async () => {
+    const content: any = {
+      getArticles: jest.fn().mockResolvedValue({ items: [] }),
+      getArticle: jest.fn(),
+      getBriefings: jest.fn(),
+      getDashboard: jest.fn(),
+      getBriefing: jest.fn(),
+    };
+    const controller = new ContentController(content);
+
+    await controller.articles(request('u1'), { page: '2', kind: 'NEWS' });
+
+    expect(content.getArticles).toHaveBeenCalledWith('u1', { page: '2', kind: 'NEWS' });
+  });
+
   it('serves health and readiness', async () => {
     const prisma: any = { $queryRaw: jest.fn().mockResolvedValue([{ '?column?': 1 }]) };
     const health = new HealthController(prisma);
@@ -92,7 +108,7 @@ describe('API controllers', () => {
       },
       stock: { findMany: jest.fn().mockResolvedValue([{ code: '005930', name: '삼성전자' }]) },
     };
-    const controller = new ContentController(prisma);
+    const controller = new ContentController(new ContentService(prisma));
     expect((await controller.articles(request())).items[0].locked).toBe(true);
     expect((await controller.article(request(), 'a1')).summary).toBeNull();
     expect((await controller.briefings(request())).items[0].locked).toBe(true);

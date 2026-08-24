@@ -1,5 +1,5 @@
 import { planEndsAt } from './billing/billing.service';
-import { isContentLocked } from './content/content.service';
+import { isContentLocked } from './content/domain/content-access';
 import { GoogleConfiguredGuard } from './auth/auth.controller';
 
 describe('content entitlement', () => {
