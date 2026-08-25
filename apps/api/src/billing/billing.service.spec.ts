@@ -1,7 +1,7 @@
 import { BillingService } from './billing.service';
 
 function createPrisma() {
-  return {
+  const prisma = {
     plan: { findMany: jest.fn(), findUniqueOrThrow: jest.fn() },
     paymentAttempt: { create: jest.fn() },
     subscription: {
@@ -12,6 +12,7 @@ function createPrisma() {
       update: jest.fn(),
     },
   };
+  return { ...prisma, $transaction: jest.fn((callback) => callback(prisma)) };
 }
 
 describe('BillingService', () => {
@@ -62,6 +63,7 @@ describe('BillingService', () => {
       autoRenew: true,
     });
 
+    expect(prisma.$transaction).toHaveBeenCalledTimes(1);
     expect(prisma.subscription.updateMany).toHaveBeenCalledWith({
       where: { userId: 'u1', status: 'ACTIVE' },
       data: { status: 'EXPIRED', autoRenew: false },

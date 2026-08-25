@@ -13,36 +13,38 @@ export class BillingService {
   }
 
   async pay(userId: string, body: SimulatePaymentDto) {
-    const plan = await this.prisma.plan.findUniqueOrThrow({ where: { code: body.planCode } });
-    const success = body.result === 'success';
-    const payment = await this.prisma.paymentAttempt.create({
-      data: {
-        userId,
-        planCode: plan.code,
-        amount: plan.price,
-        status: success ? 'SUCCEEDED' : 'FAILED',
-        cardLast4: (body.cardLast4 ?? '4242').slice(-4),
-        failureReason: success ? null : 'SIMULATED_DECLINE',
-      },
+    return this.prisma.$transaction(async (transaction) => {
+      const plan = await transaction.plan.findUniqueOrThrow({ where: { code: body.planCode } });
+      const success = body.result === 'success';
+      const payment = await transaction.paymentAttempt.create({
+        data: {
+          userId,
+          planCode: plan.code,
+          amount: plan.price,
+          status: success ? 'SUCCEEDED' : 'FAILED',
+          cardLast4: (body.cardLast4 ?? '4242').slice(-4),
+          failureReason: success ? null : 'SIMULATED_DECLINE',
+        },
+      });
+      if (!success) return { payment, subscription: null };
+      await transaction.subscription.updateMany({
+        where: { userId, status: 'ACTIVE' },
+        data: { status: 'EXPIRED', autoRenew: false },
+      });
+      const start = new Date();
+      const subscription = await transaction.subscription.create({
+        data: {
+          userId,
+          planCode: plan.code,
+          status: 'ACTIVE',
+          startsAt: start,
+          endsAt: planEndsAt(plan.code, start),
+          autoRenew: !!body.autoRenew,
+          events: { create: { type: 'ACTIVATED', detail: { paymentId: payment.id } } },
+        },
+      });
+      return { payment, subscription };
     });
-    if (!success) return { payment, subscription: null };
-    await this.prisma.subscription.updateMany({
-      where: { userId, status: 'ACTIVE' },
-      data: { status: 'EXPIRED', autoRenew: false },
-    });
-    const start = new Date();
-    const subscription = await this.prisma.subscription.create({
-      data: {
-        userId,
-        planCode: plan.code,
-        status: 'ACTIVE',
-        startsAt: start,
-        endsAt: planEndsAt(plan.code, start),
-        autoRenew: !!body.autoRenew,
-        events: { create: { type: 'ACTIVATED', detail: { paymentId: payment.id } } },
-      },
-    });
-    return { payment, subscription };
   }
 
   async mine(userId: string) {
