@@ -7,6 +7,7 @@ import random
 import re
 import time
 from datetime import datetime
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Any, Literal
 from zoneinfo import ZoneInfo
@@ -34,7 +35,12 @@ def _exchange_logger() -> logging.Logger:
     if not _EXCHANGE_LOGGER.handlers:
         log_dir = Path(settings().kis_log_dir)
         log_dir.mkdir(parents=True, exist_ok=True)
-        handler = logging.FileHandler(log_dir / "kis-api.log", encoding="utf-8")
+        handler = RotatingFileHandler(
+            log_dir / "kis-api.log",
+            maxBytes=max(1, settings().kis_log_max_bytes),
+            backupCount=max(0, settings().kis_log_backup_count),
+            encoding="utf-8",
+        )
         handler.setFormatter(logging.Formatter("%(message)s"))
         _EXCHANGE_LOGGER.addHandler(handler)
     return _EXCHANGE_LOGGER

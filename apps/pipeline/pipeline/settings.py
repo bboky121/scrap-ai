@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     kis_app_secret: str = ""
     kis_base_url: str = "https://openapi.koreainvestment.com:9443"
     kis_log_dir: str = "/var/log/kis-brief"
+    kis_log_max_bytes: int = 50 * 1024 * 1024
+    kis_log_backup_count: int = 7
     kis_top_stock_count: int = 20
     kis_request_delay_seconds: float = 0.5
     kis_news_delay_seconds: float = 0.25

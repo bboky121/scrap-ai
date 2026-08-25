@@ -8,6 +8,8 @@ x-app-env: &app-env
   KIS_APP_SECRET: ${KIS_APP_SECRET:-}
   KIS_BASE_URL: ${KIS_BASE_URL:-https://openapi.koreainvestment.com:9443}
   KIS_LOG_DIR: ${KIS_LOG_DIR:-/var/log/kis-brief}
+  KIS_LOG_MAX_BYTES: ${KIS_LOG_MAX_BYTES:-52428800}
+  KIS_LOG_BACKUP_COUNT: ${KIS_LOG_BACKUP_COUNT:-7}
   KIS_TOP_STOCK_COUNT: ${KIS_TOP_STOCK_COUNT:-20}
   KIS_REQUEST_DELAY_SECONDS: ${KIS_REQUEST_DELAY_SECONDS:-0.5}
   KIS_NEWS_DELAY_SECONDS: ${KIS_NEWS_DELAY_SECONDS:-0.25}
@@ -26,21 +28,29 @@ x-app-env: &app-env
   FCM_CLIENT_EMAIL: ${FCM_CLIENT_EMAIL:-}
   FCM_PRIVATE_KEY: ${FCM_PRIVATE_KEY:-}
   MOBILE_DEEP_LINK_SCHEME: ${MOBILE_DEEP_LINK_SCHEME:-kisbrief}
+x-json-logging: &json-logging
+  driver: json-file
+  options:
+    max-size: ${DOCKER_LOG_MAX_SIZE:-10m}
+    max-file: ${DOCKER_LOG_MAX_FILES:-5}
 services:
   postgres:
     image: postgres:16-alpine
     environment: { POSTGRES_DB: kisbrief, POSTGRES_USER: postgres, POSTGRES_PASSWORD: postgres }
     volumes: [postgres-data:/var/lib/postgresql/data]
     ports: ['127.0.0.1:5433:5432']
+    logging: *json-logging
     healthcheck: { test: [CMD-SHELL, 'pg_isready -U postgres -d kisbrief'], interval: 5s, timeout: 3s, retries: 10 }
   valkey:
     image: valkey/valkey:8-alpine
     healthcheck: { test: [CMD, valkey-cli, ping], interval: 5s, timeout: 3s, retries: 10 }
+    logging: *json-logging
   api:
     build: { context: ., dockerfile: apps/api/Dockerfile }
     environment: *app-env
     depends_on: { postgres: { condition: service_healthy }, valkey: { condition: service_healthy } }
     ports: ['4100:4000']
+    logging: *json-logging
     healthcheck: { test: [CMD, wget, -qO-, http://127.0.0.1:4000/health/live], interval: 10s, timeout: 3s, retries: 10 }
   web:
     build:
@@ -53,12 +63,14 @@ services:
       HOSTNAME: 0.0.0.0
     depends_on: { api: { condition: service_healthy } }
     ports: ['3100:3000']
+    logging: *json-logging
   python-api: &pipeline
     build: { context: ., dockerfile: apps/pipeline/Dockerfile }
     environment: *app-env
     volumes: ['./logs/pipeline:/var/log/kis-brief']
     depends_on: { postgres: { condition: service_healthy }, valkey: { condition: service_healthy } }
     ports: ['8100:8000']
+    logging: *json-logging
   celery-worker:
     <<: *pipeline
     command: [celery, -A, pipeline.tasks.celery, worker, --loglevel=INFO, --concurrency=1]
