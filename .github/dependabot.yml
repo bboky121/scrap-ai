@@ -1,11 +1,12 @@
-version: 2
-updates:
-  - package-ecosystem: npm
-    directory: /
-    schedule: { interval: weekly }
-  - package-ecosystem: pip
-    directory: /apps/pipeline
-    schedule: { interval: weekly }
-  - package-ecosystem: github-actions
-    directory: /
-    schedule: { interval: weekly }
+# Dependabot updates are temporarily disabled.
+# version: 2
+# updates:
+#   - package-ecosystem: npm
+#     directory: /
+#     schedule: { interval: weekly }
+#   - package-ecosystem: pip
+#     directory: /apps/pipeline
+#     schedule: { interval: weekly }
+#   - package-ecosystem: github-actions
+#     directory: /
+#     schedule: { interval: weekly }
