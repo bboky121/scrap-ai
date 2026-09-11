@@ -69,8 +69,8 @@ importers:
         specifier: ^1.0.1
         version: 1.0.1
       pg:
-        specifier: 8.16.3
-        version: 8.16.3
+        specifier: 8.23.0
+        version: 8.23.0
       redis:
         specifier: ^6.2.1
         version: 6.2.1(@opentelemetry/api@1.9.1)
@@ -103,8 +103,8 @@ importers:
         specifier: ^2.0.16
         version: 2.0.17
       '@types/pg':
-        specifier: 8.15.5
-        version: 8.15.5
+        specifier: 8.23.1
+        version: 8.23.1
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.70.0
         version: 8.70.0(@typescript-eslint/parser@8.70.0(eslint@10.9.1(jiti@2.7.0))(typescript@5.9.3))(eslint@10.9.1(jiti@2.7.0))(typescript@5.9.3)
@@ -2484,9 +2484,6 @@ packages:
 
   '@types/passport@1.0.17':
     resolution: {integrity: sha512-aciLyx+wDwT2t2/kJGJR2AEeBz0nJU4WuRX04Wu9Dqc5lSUtwu0WERPHYsLhF9PtseiAMPBGNUOtFjxZ56prsg==}
-
-  '@types/pg@8.15.5':
-    resolution: {integrity: sha512-LF7lF6zWEKxuT3/OR8wAZGzkg4ENGXFNyiV/JeOt9z5B+0ZVwbql9McqX5c/WStFq1GaGso7H1AzP/qSzmlCKQ==}
 
   '@types/pg@8.23.1':
     resolution: {integrity: sha512-fKVHpikPdg4GKks3JuLEhvwSyvwzF23hnabPy6DD8ljVbC7+6J5dQzdv4arV6jqq57djnMgs1HKBxX4P8aBI3A==}
@@ -5240,8 +5237,8 @@ packages:
     resolution: {integrity: sha512-qTAAlrEsl8s4OiEQY69wDvcMIdQN6wdz5ojQiOy6YRMuynxenON0O5oCpJI6lshc6scgAY8qvJ2On/p+CXY0GA==}
     engines: {node: '>=4'}
 
-  pg@8.16.3:
-    resolution: {integrity: sha512-enxc1h0jA/aq5oSDMvqyW3q89ra6XIIDZgCX9vkMrnz5DFTw/Ny3Li2lFQ+pt3L6MCgm/5o2o8HW9hiJji+xvw==}
+  pg@8.23.0:
+    resolution: {integrity: sha512-Ip2EQCngowJLGOfCwkFhPXU7/ljlhn6Rxlmy4XYfL2Y+vyRM59+8uR2xqRWKdYmbXmxCFOAmKxBuSUCdF34qLg==}
     engines: {node: '>= 16.0.0'}
     peerDependencies:
       pg-native: '>=3.0.1'
@@ -8569,7 +8566,7 @@ snapshots:
     dependencies:
       '@prisma/driver-adapter-utils': 7.10.0
       '@types/pg': 8.23.1
-      pg: 8.16.3
+      pg: 8.23.0
       postgres-array: 3.0.4
     transitivePeerDependencies:
       - pg-native
@@ -9101,12 +9098,6 @@ snapshots:
   '@types/passport@1.0.17':
     dependencies:
       '@types/express': 5.0.6
-
-  '@types/pg@8.15.5':
-    dependencies:
-      '@types/node': 26.5.0
-      pg-protocol: 1.16.0
-      pg-types: 2.2.0
 
   '@types/pg@8.23.1':
     dependencies:
@@ -12515,9 +12506,9 @@ snapshots:
 
   pg-int8@1.0.1: {}
 
-  pg-pool@3.14.0(pg@8.16.3):
+  pg-pool@3.14.0(pg@8.23.0):
     dependencies:
-      pg: 8.16.3
+      pg: 8.23.0
 
   pg-protocol@1.16.0: {}
 
@@ -12529,10 +12520,10 @@ snapshots:
       postgres-date: 1.0.7
       postgres-interval: 1.2.0
 
-  pg@8.16.3:
+  pg@8.23.0:
     dependencies:
       pg-connection-string: 2.14.0
-      pg-pool: 3.14.0(pg@8.16.3)
+      pg-pool: 3.14.0(pg@8.23.0)
       pg-protocol: 1.16.0
       pg-types: 2.2.0
       pgpass: 1.0.5
