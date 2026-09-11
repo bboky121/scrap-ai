@@ -136,8 +136,8 @@ importers:
         specifier: ^26.4.0
         version: 26.4.0(expo@57.0.21)(react-native@0.87.1(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.2.8))(react@19.2.8)
       '@react-native-firebase/messaging':
-        specifier: ^26.2.0
-        version: 26.3.2(@react-native-firebase/app@26.4.0(expo@57.0.21)(react-native@0.87.1(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.2.8))(react@19.2.8))(expo@57.0.21)
+        specifier: ^26.4.0
+        version: 26.4.0(@react-native-firebase/app@26.4.0(expo@57.0.21)(react-native@0.87.1(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.2.8))(react@19.2.8))(expo@57.0.21)
       expo:
         specifier: ^57.0.21
         version: 57.0.21(@babel/core@7.29.7)(@expo/dom-webview@57.0.1)(react-dom@19.2.8(react@19.2.8))(react-native-webview@14.0.1(react-native@0.87.1(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.2.8))(react@19.2.8))(react-native@0.87.1(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.2.8))(react@19.2.8)(typescript@5.9.3)
@@ -2185,10 +2185,10 @@ packages:
       expo:
         optional: true
 
-  '@react-native-firebase/messaging@26.3.2':
-    resolution: {integrity: sha512-iLFBQW8EJerqVyh2TrhZMoQbA5Se1LnLZVBhbNrcWzrrHl/H212J0XcAxITmGmJxvHZMw8uZEve+31oGl5hiGg==}
+  '@react-native-firebase/messaging@26.4.0':
+    resolution: {integrity: sha512-OmUyc/C6urbzBbOlUQP2sob71gn2irbbWQQtK8VPCh/rwdCTw1YMhVA+CR7NroKTHKnU+iOyGYVohbxFQlGVLA==}
     peerDependencies:
-      '@react-native-firebase/app': 26.3.2
+      '@react-native-firebase/app': 26.4.0
       expo: '>=47.0.0'
     peerDependenciesMeta:
       expo:
@@ -8785,7 +8785,7 @@ snapshots:
     transitivePeerDependencies:
       - '@react-native-async-storage/async-storage'
 
-  '@react-native-firebase/messaging@26.3.2(@react-native-firebase/app@26.4.0(expo@57.0.21)(react-native@0.87.1(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.2.8))(react@19.2.8))(expo@57.0.21)':
+  '@react-native-firebase/messaging@26.4.0(@react-native-firebase/app@26.4.0(expo@57.0.21)(react-native@0.87.1(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.2.8))(react@19.2.8))(expo@57.0.21)':
     dependencies:
       '@react-native-firebase/app': 26.4.0(expo@57.0.21)(react-native@0.87.1(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.2.8))(react@19.2.8)
     optionalDependencies:
