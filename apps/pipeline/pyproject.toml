@@ -3,7 +3,7 @@ name = "kis-brief-pipeline"
 version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = [
-  "fastapi>=0.162.0,<1", "uvicorn[standard]>=0.54.0,<1", "celery[redis]>=5.7.0,<6",
+  "fastapi>=0.162.3,<1", "uvicorn[standard]>=0.54.0,<1", "celery[redis]>=5.7.0,<6",
   "redis>=8.1.0,<9", "httpx>=0.28.1,<1", "pydantic-settings>=2.16.2,<3",
   "sqlalchemy>=2.1.8,<3", "psycopg[binary]>=3.3.8,<4", "beautifulsoup4>=4.15.0,<5"
 ]
